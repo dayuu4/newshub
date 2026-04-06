@@ -160,6 +160,42 @@
     .kb-key{background:var(--hover);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11.5px;font-weight:700;font-family:monospace;color:var(--text);white-space:nowrap;text-align:center}
     .kb-desc{font-size:12.5px;color:var(--muted)}
     @media(max-width:640px){.sb{display:none}.tb-title{display:none}}
+    /* Multi-column layouts */
+    .arts-outer.col2 .arts-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .arts-outer.col3 .arts-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    /* Unread badge on cat buttons */
+    .unread-badge{font-size:9.5px;font-weight:800;background:var(--blue);color:#fff;border-radius:10px;padding:0 5px;min-width:16px;text-align:center;display:none}
+    .unread-badge.vis{display:inline-block}
+    /* Sort select */
+    .sort-sel{padding:3px 8px;border:1px solid var(--border);border-radius:20px;background:var(--darker);color:var(--muted);font-size:11.5px;cursor:pointer;font-family:inherit;outline:none;transition:border-color .13s}
+    .sort-sel:focus,.sort-sel:hover{border-color:var(--blue);color:var(--blue)}
+    /* Muted words */
+    .muted-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(220,38,38,.12);color:#ff6b6b;border:1px solid rgba(220,38,38,.25);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;margin:2px}
+    .muted-tag button{background:none;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0;line-height:1;opacity:.7}
+    .muted-tag button:hover{opacity:1}
+    .muted-inp{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--darker);color:var(--text);font-size:11.5px;outline:none;font-family:inherit;margin-bottom:4px}
+    .muted-inp:focus{border-color:var(--red)}
+    .muted-wrap{padding:8px 12px 6px;flex-shrink:0}
+    /* Font size */
+    .fs-grp{display:flex;align-items:center;gap:3px}
+    .fs-btn{padding:3px 7px;border:1px solid var(--border);border-radius:5px;background:none;color:var(--muted);cursor:pointer;font-weight:700;font-family:inherit;font-size:12px;transition:all .13s;line-height:1}
+    .fs-btn:hover{border-color:var(--blue);color:var(--blue)}
+    /* Mark all read */
+    .mark-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 9px;font-size:11px;color:var(--faint);cursor:pointer;white-space:nowrap;transition:all .13s;font-family:inherit}
+    .mark-btn:hover{background:var(--hover);color:var(--text)}
+    /* Dedup multi-source badge */
+    .multi-src{font-size:9px;font-weight:800;background:rgba(0,102,255,.15);color:var(--blue);border:1px solid rgba(0,102,255,.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle}
+    /* OPML buttons */
+    .opml-row{display:flex;gap:4px;margin-top:4px}
+    .opml-btn{flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--muted);cursor:pointer;font-size:11px;transition:all .15s;font-family:inherit;text-align:center}
+    .opml-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,102,255,.07)}
+    /* Reading history */
+    .hist-empty{font-size:12px;color:var(--faint);text-align:center;padding:20px 8px}
+    /* Notif request bar */
+    .notif-bar{display:none;align-items:center;gap:10px;padding:6px 18px;background:rgba(220,38,38,.1);border-bottom:1px solid rgba(220,38,38,.25);font-size:12px;color:#ff6b6b;flex-shrink:0}
+    .notif-bar.vis{display:flex}
+    .notif-btn{padding:3px 10px;border:1px solid rgba(220,38,38,.4);border-radius:20px;background:none;color:#ff6b6b;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
+    .notif-btn:hover{background:rgba(220,38,38,.15)}
   </style>
 </head>
 <body>
@@ -179,21 +215,32 @@
 
     <div class="sb-sec">
       <span class="sb-lbl">View</span>
-      <button class="cat-btn active" data-cat="all"       onclick="setCat('all')">      🌐 All Sources  <span class="cat-cnt" id="cnt-all">—</span></button>
+      <button class="cat-btn active" data-cat="all"       onclick="setCat('all')">      🌐 All Sources  <span class="unread-badge" id="unrd-all"></span><span class="cat-cnt" id="cnt-all">—</span></button>
       <button class="cat-btn bm"     data-cat="bookmarks" onclick="setCat('bookmarks')">🔖 Bookmarks    <span class="cat-cnt" id="cnt-bm">0</span></button>
+      <button class="cat-btn"        data-cat="history"   onclick="setCat('history')">  🕑 History      <span class="cat-cnt" id="cnt-hist">0</span></button>
     </div>
     <div class="sb-sec">
       <span class="sb-lbl">Categories</span>
-      <button class="cat-btn" data-cat="ai"      onclick="setCat('ai')">      🤖 AI & ML     <span class="cat-cnt" id="cnt-ai">—</span></button>
-      <button class="cat-btn" data-cat="tech"    onclick="setCat('tech')">    💻 Tech        <span class="cat-cnt" id="cnt-tech">—</span></button>
-      <button class="cat-btn" data-cat="finance" onclick="setCat('finance')"> 📈 Finance     <span class="cat-cnt" id="cnt-finance">—</span></button>
-      <button class="cat-btn" data-cat="general" onclick="setCat('general')"> 📚 General     <span class="cat-cnt" id="cnt-general">—</span></button>
-      <button class="cat-btn" data-cat="breaking" onclick="setCat('breaking')">🔴 Breaking    <span class="cat-cnt" id="cnt-breaking">—</span></button>
+      <button class="cat-btn" data-cat="ai"      onclick="setCat('ai')">      🤖 AI & ML     <span class="unread-badge" id="unrd-ai"></span><span class="cat-cnt" id="cnt-ai">—</span></button>
+      <button class="cat-btn" data-cat="tech"    onclick="setCat('tech')">    💻 Tech        <span class="unread-badge" id="unrd-tech"></span><span class="cat-cnt" id="cnt-tech">—</span></button>
+      <button class="cat-btn" data-cat="finance" onclick="setCat('finance')"> 📈 Finance     <span class="unread-badge" id="unrd-finance"></span><span class="cat-cnt" id="cnt-finance">—</span></button>
+      <button class="cat-btn" data-cat="general" onclick="setCat('general')"> 📚 General     <span class="unread-badge" id="unrd-general"></span><span class="cat-cnt" id="cnt-general">—</span></button>
+      <button class="cat-btn" data-cat="breaking" onclick="setCat('breaking')">🔴 Breaking   <span class="unread-badge" id="unrd-breaking"></span><span class="cat-cnt" id="cnt-breaking">—</span></button>
     </div>
     <div class="sb-sec"><span class="sb-lbl">Sources</span></div>
     <div class="feeds-scr" id="feedList"></div>
+    <div class="muted-wrap" id="mutedWrap">
+      <span class="sb-lbl">🔇 Muted Keywords</span>
+      <input class="muted-inp" id="mutedInput" type="text" placeholder="Type word + Enter to mute…" onkeydown="addMuted(event)">
+      <div id="mutedList"></div>
+    </div>
     <div class="sb-foot">
       <button class="add-btn" onclick="openModal()">＋ Add Custom Feed</button>
+      <div class="opml-row">
+        <button class="opml-btn" onclick="triggerOPMLImport()" title="Import feeds from an OPML file">📥 Import OPML</button>
+        <button class="opml-btn" onclick="exportOPML()" title="Export custom feeds as OPML">📤 Export OPML</button>
+      </div>
+      <input type="file" id="opmlInput" accept=".opml,.xml" style="display:none" onchange="handleOPML(event)">
     </div>
   </aside>
 
@@ -205,6 +252,11 @@
         <span class="srch-ico">🔍</span>
         <input class="srch" id="srchInput" type="text" placeholder="Search articles… (or press R to refresh, B for bookmarks)" oninput="onSearch(this.value)">
       </div>
+      <div class="fs-grp">
+        <button class="fs-btn" onclick="adjustFont(-0.1)" title="Decrease font size">A−</button>
+        <button class="fs-btn" onclick="adjustFont(0.1)"  title="Increase font size">A+</button>
+      </div>
+      <button class="ico-btn" id="colBtn"     onclick="cycleLayout()"   title="Toggle column layout">⊟</button>
       <button class="ico-btn" id="densityBtn" onclick="toggleDensity()" title="Toggle compact view">⊞</button>
       <button class="ico-btn" onclick="openHelp()" title="Keyboard shortcuts (?)">⌨</button>
       <button class="ref-btn" id="refBtn" onclick="refreshAll()">
@@ -217,6 +269,11 @@
       <span id="statOk"  style="display:none" class="stat-ok"></span>
       <span id="statErr" style="display:none" class="stat-err"></span>
     </div>
+    <div class="notif-bar" id="notifBar">
+      🔴 Enable notifications to get alerts for breaking news
+      <button class="notif-btn" onclick="requestNotifPermission()">Enable</button>
+      <button class="notif-btn" onclick="dismissNotifBar()">Dismiss</button>
+    </div>
     <div class="tf-bar">
       <span class="tf-lbl">Time:</span>
       <button class="tf-btn active" data-tf="all" onclick="setTimeFilter('all')">All</button>
@@ -224,6 +281,13 @@
       <button class="tf-btn" data-tf="6" onclick="setTimeFilter('6')">6h</button>
       <button class="tf-btn" data-tf="24" onclick="setTimeFilter('24')">24h</button>
       <button class="tf-btn" data-tf="168" onclick="setTimeFilter('168')">7 days</button>
+      <span class="tf-lbl" style="margin-left:8px">Sort:</span>
+      <select class="sort-sel" id="sortSel" onchange="setSortOrder(this.value)">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="source">By source</option>
+        <option value="unread">Unread first</option>
+      </select>
     </div>
     <div class="arts-outer" id="artsOuter">
       <div class="state-box">
@@ -238,7 +302,7 @@
 <!-- MODAL -->
 <div class="overlay" id="overlay" onclick="ovClick(event)">
   <div class="modal">
-    <h3>Add Custom Feed</h3>
+    <h3 id="modalTitle">Add Custom Feed</h3>
     <div class="fg"><label class="fl">Feed Name</label>
       <input class="fi" id="fName" type="text" placeholder="e.g. One Useful Thing"></div>
     <div class="fg"><label class="fl">RSS / Atom URL</label>
@@ -273,6 +337,10 @@
       <span class="kb-key">D</span><span class="kb-desc">Toggle compact/full card density</span>
       <span class="kb-key">T</span><span class="kb-desc">Toggle light/dark theme</span>
       <span class="kb-key">?</span><span class="kb-desc">Show this help</span>
+      <span class="kb-key">M</span><span class="kb-desc">Toggle muted keywords panel</span>
+      <span class="kb-key">N</span><span class="kb-desc">Enable breaking news notifications</span>
+      <span class="kb-key">U</span><span class="kb-desc">Mark all visible articles as read</span>
+      <span class="kb-key">E</span><span class="kb-desc">Export feeds as OPML</span>
     </div>
     <div class="m-actions" style="margin-top:22px">
       <button class="btn btn-p" onclick="closeHelp()">Got it</button>
@@ -301,37 +369,86 @@ const PROXY_STRATEGIES = [
 // Default feeds list — matches the server's DEFAULT_FEEDS exactly
 // (used for sidebar display; actual article fetching happens server-side)
 const DEFAULT_FEEDS = [
-  {id:'one-useful-thing',name:'One Useful Thing',  url:'https://www.oneusefulthing.org/feed',                              cat:'ai'},
-  {id:'simon-willison',  name:'Simon Willison',    url:'https://simonwillison.net/atom/everything/',                       cat:'ai'},
-  {id:'hf',              name:'Hugging Face',      url:'https://huggingface.co/blog/feed.xml',                             cat:'ai'},
-  {id:'the-batch',       name:'The Batch (DL.AI)', url:'https://www.deeplearning.ai/the-batch/feed/',                      cat:'ai'},
-  {id:'ai-news',         name:'AI News',           url:'https://www.artificialintelligence-news.com/feed/',                 cat:'ai'},
-  {id:'mit-ai',          name:'MIT AI News',       url:'https://news.mit.edu/rss/topic/artificial-intelligence2',          cat:'ai'},
-  {id:'openai',          name:'OpenAI Blog',       url:'https://openai.com/news/rss.xml',                                  cat:'ai'},
-  {id:'deepmind',        name:'Google DeepMind',   url:'https://deepmind.google/blog/rss.xml',                             cat:'ai'},
-  {id:'import-ai',       name:'Import AI',         url:'https://jack-clark.net/feed/',                                     cat:'ai'},
-  {id:'hn',              name:'Hacker News',       url:'https://hnrss.org/frontpage',                                      cat:'tech'},
-  {id:'tc',              name:'TechCrunch',        url:'https://techcrunch.com/feed/',                                     cat:'tech'},
-  {id:'verge',           name:'The Verge',         url:'https://www.theverge.com/rss/index.xml',                           cat:'tech'},
-  {id:'ars',             name:'Ars Technica',      url:'https://feeds.arstechnica.com/arstechnica/index',                  cat:'tech'},
-  {id:'engadget',        name:'Engadget',          url:'https://www.engadget.com/rss.xml',                                 cat:'tech'},
-  {id:'zdnet',           name:'ZDNet',             url:'https://www.zdnet.com/news/rss.xml',                               cat:'tech'},
-  {id:'tldr-tech',       name:'TLDR Tech',         url:'https://tldr.tech/rss',                                            cat:'tech'},
-  {id:'cnbc',            name:'CNBC Markets',      url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',            cat:'finance'},
-  {id:'mwatch',          name:'MarketWatch',       url:'https://feeds.marketwatch.com/marketwatch/topstories/',            cat:'finance'},
-  {id:'coindesk',        name:'CoinDesk',          url:'https://www.coindesk.com/arc/outboundfeeds/rss/',                  cat:'finance'},
-  {id:'yahoo-finance',   name:'Yahoo Finance',     url:'https://finance.yahoo.com/news/rssindex',                         cat:'finance'},
-  {id:'fool',            name:'Motley Fool',       url:'https://www.fool.com/feeds/index.aspx',                            cat:'finance'},
-  {id:'bbc',             name:'BBC News',          url:'https://feeds.bbci.co.uk/news/rss.xml',                            cat:'general'},
-  {id:'guardian',        name:'The Guardian Tech', url:'https://www.theguardian.com/technology/rss',                       cat:'general'},
-  {id:'mit-rev',         name:'MIT Tech Review',   url:'https://www.technologyreview.com/feed/',                           cat:'general'},
-  {id:'nyt-tech',        name:'NYT Technology',    url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',     cat:'general'},
-  {id:'new-scientist',   name:'New Scientist',     url:'https://www.newscientist.com/feed/home/',                          cat:'general'},
+  // AI
+  {id:'one-useful-thing',name:'One Useful Thing',    url:'https://www.oneusefulthing.org/feed',                                                              cat:'ai'},
+  {id:'simon-willison',  name:'Simon Willison',      url:'https://simonwillison.net/atom/everything/',                                                       cat:'ai'},
+  {id:'hf',              name:'Hugging Face',        url:'https://huggingface.co/blog/feed.xml',                                                             cat:'ai'},
+  {id:'the-batch',       name:'The Batch (DL.AI)',   url:'https://www.deeplearning.ai/the-batch/feed/',                                                      cat:'ai'},
+  {id:'ai-news',         name:'AI News',             url:'https://www.artificialintelligence-news.com/feed/',                                                cat:'ai'},
+  {id:'mit-ai',          name:'MIT AI News',         url:'https://news.mit.edu/rss/topic/artificial-intelligence2',                                          cat:'ai'},
+  {id:'openai',          name:'OpenAI Blog',         url:'https://openai.com/news/rss.xml',                                                                  cat:'ai'},
+  {id:'deepmind',        name:'Google DeepMind',     url:'https://deepmind.google/blog/rss.xml',                                                             cat:'ai'},
+  {id:'import-ai',       name:'Import AI',           url:'https://jack-clark.net/feed/',                                                                     cat:'ai'},
+  {id:'google-ai',       name:'Google AI Blog',      url:'https://blog.google/technology/ai/rss/',                                                           cat:'ai'},
+  {id:'nvidia-dev',      name:'Nvidia AI Blog',      url:'https://developer.nvidia.com/blog/feed/',                                                          cat:'ai'},
+  {id:'arxiv-ai',        name:'ArXiv CS.AI',         url:'https://rss.arxiv.org/rss/cs.AI',                                                                  cat:'ai'},
+  {id:'lesswrong',       name:'LessWrong',           url:'https://www.lesswrong.com/feed.xml',                                                               cat:'ai'},
+  {id:'the-gradient',    name:'The Gradient',        url:'https://thegradient.pub/rss/',                                                                     cat:'ai'},
+  {id:'towards-ds',      name:'Towards Data Science',url:'https://towardsdatascience.com/feed',                                                              cat:'ai'},
+  {id:'towards-ai',      name:'Towards AI',          url:'https://pub.towardsai.net/feed',                                                                   cat:'ai'},
+  {id:'rundown-ai',      name:'The Rundown AI',      url:'https://therundown.substack.com/feed',                                                             cat:'ai'},
+  {id:'bens-bites',      name:"Ben's Bites",         url:'https://www.bensbites.com/feed',                                                                   cat:'ai'},
+  {id:'tldr-ai',         name:'TLDR AI',             url:'https://tldr.tech/api/rss/ai',                                                                     cat:'ai'},
+  {id:'anthropic',       name:'Anthropic',           url:'https://news.google.com/rss/search?q=site:anthropic.com&hl=en-US&gl=US&ceid=US:en',               cat:'ai'},
+  {id:'meta-ai',         name:'Meta AI',             url:'https://news.google.com/rss/search?q=site:ai.meta.com&hl=en-US&gl=US&ceid=US:en',                 cat:'ai'},
+  {id:'mistral',         name:'Mistral AI',          url:'https://news.google.com/rss/search?q=site:mistral.ai&hl=en-US&gl=US&ceid=US:en',                  cat:'ai'},
+  {id:'a16z-ai',         name:'a16z AI',             url:'https://news.google.com/rss/search?q=site:a16z.com+AI&hl=en-US&gl=US&ceid=US:en',                 cat:'ai'},
+  {id:'perplexity',      name:'Perplexity AI',       url:'https://news.google.com/rss/search?q=site:perplexity.ai&hl=en-US&gl=US&ceid=US:en',               cat:'ai'},
+  {id:'superhuman-ai',   name:'Superhuman AI',       url:'https://news.google.com/rss/search?q=superhuman+AI+newsletter&hl=en-US&gl=US&ceid=US:en',         cat:'ai'},
+  {id:'venturebeat-ai',  name:'VentureBeat AI',      url:'https://news.google.com/rss/search?q=site:venturebeat.com+AI&hl=en-US&gl=US&ceid=US:en',          cat:'ai'},
+  // Tech
+  {id:'hn',              name:'Hacker News',         url:'https://hnrss.org/frontpage',                                                                      cat:'tech'},
+  {id:'tc',              name:'TechCrunch',          url:'https://techcrunch.com/feed/',                                                                      cat:'tech'},
+  {id:'verge',           name:'The Verge',           url:'https://www.theverge.com/rss/index.xml',                                                           cat:'tech'},
+  {id:'ars',             name:'Ars Technica',        url:'https://feeds.arstechnica.com/arstechnica/index',                                                   cat:'tech'},
+  {id:'engadget',        name:'Engadget',            url:'https://www.engadget.com/rss.xml',                                                                  cat:'tech'},
+  {id:'zdnet',           name:'ZDNet',               url:'https://www.zdnet.com/news/rss.xml',                                                                cat:'tech'},
+  {id:'tldr-tech',       name:'TLDR Tech',           url:'https://tldr.tech/rss',                                                                             cat:'tech'},
+  {id:'wired',           name:'Wired',               url:'https://www.wired.com/feed/rss',                                                                    cat:'tech'},
+  {id:'ieee',            name:'IEEE Spectrum',       url:'https://spectrum.ieee.org/feeds/feed.rss',                                                          cat:'tech'},
+  {id:'9to5mac',         name:'9to5Mac',             url:'https://9to5mac.com/feed/',                                                                         cat:'tech'},
+  {id:'fast-company',    name:'Fast Company',        url:'https://www.fastcompany.com/latest/rss',                                                            cat:'tech'},
+  {id:'the-information', name:'The Information',     url:'https://www.theinformation.com/feed',                                                               cat:'tech'},
+  {id:'wsj-tech',        name:'WSJ Tech',            url:'https://feeds.a.dj.com/rss/RSSWSJD.xml',                                                           cat:'tech'},
+  // Finance
+  {id:'cnbc',            name:'CNBC Markets',        url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',                                             cat:'finance'},
+  {id:'mwatch',          name:'MarketWatch',         url:'https://feeds.marketwatch.com/marketwatch/topstories/',                                             cat:'finance'},
+  {id:'coindesk',        name:'CoinDesk',            url:'https://www.coindesk.com/arc/outboundfeeds/rss/',                                                   cat:'finance'},
+  {id:'yahoo-finance',   name:'Yahoo Finance',       url:'https://finance.yahoo.com/news/rssindex',                                                           cat:'finance'},
+  {id:'fool',            name:'Motley Fool',         url:'https://www.fool.com/feeds/index.aspx',                                                             cat:'finance'},
+  {id:'bloomberg-tech',  name:'Bloomberg Tech',      url:'https://feeds.bloomberg.com/technology/news.rss',                                                   cat:'finance'},
+  {id:'bloomberg-mkts',  name:'Bloomberg Markets',   url:'https://feeds.bloomberg.com/markets/news.rss',                                                      cat:'finance'},
+  {id:'wsj-markets',     name:'WSJ Markets',         url:'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',                                                    cat:'finance'},
+  {id:'ft',              name:'Financial Times',     url:'https://www.ft.com/rss/home/uk',                                                                    cat:'finance'},
+  {id:'seeking-alpha',   name:'Seeking Alpha',       url:'https://seekingalpha.com/feed.xml',                                                                 cat:'finance'},
+  {id:'economist',       name:'The Economist',       url:'https://www.economist.com/finance-and-economics/rss.xml',                                           cat:'finance'},
+  {id:'investopedia',    name:'Investopedia',        url:'https://news.google.com/rss/search?q=site:investopedia.com&hl=en-US&gl=US&ceid=US:en',             cat:'finance'},
+  {id:'barrons',         name:"Barron's",            url:'https://news.google.com/rss/search?q=site:barrons.com&hl=en-US&gl=US&ceid=US:en',                  cat:'finance'},
+  // General
+  {id:'bbc',             name:'BBC News',            url:'https://feeds.bbci.co.uk/news/rss.xml',                                                             cat:'general'},
+  {id:'guardian',        name:'The Guardian Tech',   url:'https://www.theguardian.com/technology/rss',                                                        cat:'general'},
+  {id:'mit-rev',         name:'MIT Tech Review',     url:'https://www.technologyreview.com/feed/',                                                            cat:'general'},
+  {id:'nyt-tech',        name:'NYT Technology',      url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',                                       cat:'general'},
+  {id:'new-scientist',   name:'New Scientist',       url:'https://www.newscientist.com/feed/home/',                                                            cat:'general'},
+  // Breaking
+  {id:'npr',             name:'NPR News',            url:'https://feeds.npr.org/1001/rss.xml',                                                                cat:'breaking'},
+  {id:'al-jazeera',      name:'Al Jazeera',          url:'https://www.aljazeera.com/xml/rss/all.xml',                                                         cat:'breaking'},
+  {id:'guardian-world',  name:'Guardian World',      url:'https://www.theguardian.com/world/rss',                                                             cat:'breaking'},
+  {id:'reuters',         name:'Reuters',             url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',                  cat:'breaking'},
+  {id:'sky-news',        name:'Sky News',            url:'https://feeds.skynews.com/feeds/rss/world.xml',                                                     cat:'breaking'},
 ];
 
 // ── State ───────────────────────────────────────────────────
 let allArts=[], activeCat='all', activeFeed=null, searchQ='', loading=false, showArch=false;
 let timeFilter='all', compactMode=false, darkMode=true;
+let sortOrder=localStorage.getItem('nh_sort')||'newest';
+let colLayout=parseInt(localStorage.getItem('nh_col')||'1');
+let fontSize=parseFloat(localStorage.getItem('nh_fs')||'1');
+let mutedWords=new Set(JSON.parse(localStorage.getItem('nh_muted')||'[]'));
+let histArts=JSON.parse(localStorage.getItem('nh_hist_arts')||'[]');
+let editingFeedId=null;
+let lastBreakingIds=new Set();
+let notifDismissed=!!localStorage.getItem('nh_notif_dismissed');
 let statuses={}, feeds=[];
 
 const readSet   = new Set(JSON.parse(localStorage.getItem('nh_read')||'[]'));
@@ -424,6 +541,8 @@ async function refreshAll(){
       allArts.sort((a,b)=>toTS(b.date)-toTS(a.date));
     }
 
+    allArts=dedupeArts(allArts);
+    checkBreakingNotifs(allArts);
     showStats(`${feeds.length} sources`,allArts.length,0,true);
     updateCounts();renderArticles();
     toast(`✓ ${allArts.length} articles loaded`);
@@ -483,6 +602,10 @@ document.addEventListener('keydown',e=>{
   if(e.key==='d'||e.key==='D'){toggleDensity();return}
   if(e.key==='t'||e.key==='T'){toggleTheme();return}
   if(e.key==='?'){openHelp();return}
+  if(e.key==='m'||e.key==='M'){toggleMutedPanel();return}
+  if(e.key==='n'||e.key==='N'){requestNotifPermission();return}
+  if(e.key==='u'||e.key==='U'){markAllRead();return}
+  if(e.key==='e'||e.key==='E'){exportOPML();return}
   const cats=['all','ai','tech','finance','general'];
   if(e.key>='1'&&e.key<='5'){setCat(cats[parseInt(e.key)-1]);return}
 });
@@ -503,34 +626,51 @@ function setCat(cat){
   activeCat=cat;activeFeed=null;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
   document.getElementById('tbTitle').textContent=CAT_LABELS[cat]||cat;
-  renderFeedList();renderArticles();
+  if(cat==='breaking'&&!notifDismissed&&Notification&&Notification.permission==='default'){
+    document.getElementById('notifBar').classList.add('vis');
+  }
+  updateURL();renderFeedList();renderArticles();
 }
 function setFeed(id){
-  if(activeFeed===id){activeFeed=null;renderFeedList();renderArticles();return;}
+  if(activeFeed===id){activeFeed=null;updateURL();renderFeedList();renderArticles();return;}
   activeFeed=id;
   const f=feeds.find(x=>x.id===id);
   document.getElementById('tbTitle').textContent=f?f.name:'Feed';
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  renderFeedList();renderArticles();
+  updateURL();renderFeedList();renderArticles();
 }
 function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles()}
 
 function visible(){
   if(activeCat==='bookmarks'){let a=bmArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ));return a}
+  if(activeCat==='history'){let a=histArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ));return a}
   let a=allArts;
   if(activeFeed)a=a.filter(x=>x.feedId===activeFeed);
   else if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
   if(timeFilter!=='all'){const cutoff=Date.now()-parseInt(timeFilter)*3600000;a=a.filter(x=>toTS(x.date)>=cutoff)}
+  if(mutedWords.size)a=a.filter(x=>![...mutedWords].some(w=>(x.title+' '+(x.desc||'')).toLowerCase().includes(w)));
   if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));
+  if(sortOrder==='oldest')a=[...a].sort((x,y)=>toTS(x.date)-toTS(y.date));
+  else if(sortOrder==='source')a=[...a].sort((x,y)=>(x.source||'').localeCompare(y.source||''));
+  else if(sortOrder==='unread')a=[...a].sort((x,y)=>readSet.has(x.id)-readSet.has(y.id));
   return a;
 }
 
 // ── Rendering ────────────────────────────────────────────────
 function updateCounts(){
   const c={all:0,ai:0,tech:0,finance:0,general:0,breaking:0};
-  allArts.forEach(a=>{c.all++;if(c[a.cat]!==undefined)c[a.cat]++});
+  const u={all:0,ai:0,tech:0,finance:0,general:0,breaking:0};
+  allArts.forEach(a=>{
+    c.all++;if(c[a.cat]!==undefined)c[a.cat]++;
+    if(!readSet.has(a.id)){u.all++;if(u[a.cat]!==undefined)u[a.cat]++}
+  });
   Object.entries(c).forEach(([k,v])=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=v});
+  Object.entries(u).forEach(([k,v])=>{
+    const el=document.getElementById('unrd-'+k);
+    if(el){el.textContent=v;el.classList.toggle('vis',v>0)}
+  });
   const bel=document.getElementById('cnt-bm');if(bel)bel.textContent=bmSet.size;
+  const hel=document.getElementById('cnt-hist');if(hel)hel.textContent=histArts.length;
 }
 
 function toTS(d){if(!d)return 0;const ts=typeof d==='string'?new Date(d):d;return isNaN(ts)?0:ts.getTime()}
@@ -552,6 +692,7 @@ function cardHtml(a){
     <button class="bm-btn${isBm?' saved':''}" onclick="toggleBm('${esc(a.id)}',this,event)" title="${isBm?'Remove bookmark':'Bookmark'}">🔖</button>
     <div class="art-meta">
       <span class="src-pill" style="background:${color}">${esc(a.source)}</span>
+      ${a._alts&&a._alts.length?`<span class="multi-src">+${a._alts.length} source${a._alts.length>1?'s':''}</span>`:''}
       ${isNew(a.date)?'<span class="new-pill">New</span>':''}
       <span class="art-date">${fmtDate(a.date)}</span>
     </div>
@@ -562,7 +703,17 @@ function cardHtml(a){
 
 function onCardClick(el){
   const id=el.getAttribute('data-id');
-  if(id){readSet.add(id);localStorage.setItem('nh_read',JSON.stringify([...readSet].slice(-3000)));el.classList.add('read')}
+  if(id){
+    readSet.add(id);localStorage.setItem('nh_read',JSON.stringify([...readSet].slice(-5000)));el.classList.add('read');
+    const art=allArts.find(a=>a.id===id);
+    if(art){
+      histArts=histArts.filter(a=>a.id!==id);
+      histArts.unshift({id:art.id,title:art.title,link:art.link,source:art.source,cat:art.cat,date:art.date});
+      if(histArts.length>300)histArts=histArts.slice(0,300);
+      localStorage.setItem('nh_hist_arts',JSON.stringify(histArts));
+      updateCounts();
+    }
+  }
 }
 
 function renderArticles(){
@@ -572,9 +723,13 @@ function renderArticles(){
     outer.innerHTML=`<div class="state-box"><div class="state-icon">${searchQ?'🔍':isBm?'🔖':'📭'}</div><div class="state-title">${searchQ?'No results':isBm?'No bookmarks yet':'No articles yet'}</div><div class="state-desc">${searchQ?'Try a different search':isBm?'Click 🔖 on any article to save it':'Click Refresh to load your feeds'}</div></div>`;
     return;
   }
+  if(activeCat==='history'){
+    outer.innerHTML=arts.length?`<div class="sec-hdr"><span class="sec-name">Reading History</span><span class="sec-cnt">${arts.length} articles</span><div class="sec-line"></div><button class="mark-btn" onclick="clearHistory()">✕ Clear history</button></div><div class="arts-list">${arts.map(cardHtml).join('')}</div>`:`<div class="state-box"><div class="state-icon">🕑</div><div class="state-title">No history yet</div><div class="state-desc">Articles you open will appear here</div></div>`;
+    return;
+  }
   const recent=arts.filter(a=>isRecent(a.date)),arch=arts.filter(a=>!isRecent(a.date));
   let html='';
-  if(recent.length)html+=`<div class="sec-hdr"><span class="sec-name">Recent</span><span class="sec-cnt">${recent.length} article${recent.length!==1?'s':''}</span><div class="sec-line"></div></div><div class="arts-list">${recent.map(cardHtml).join('')}</div>`;
+  if(recent.length)html+=`<div class="sec-hdr"><span class="sec-name">Recent</span><span class="sec-cnt">${recent.length} article${recent.length!==1?'s':''}</span><div class="sec-line"></div><button class="mark-btn" onclick="markAllRead()">✓ Mark all read</button></div><div class="arts-list">${recent.map(cardHtml).join('')}</div>`;
   if(arch.length)html+=`<div class="sec-hdr"><span class="sec-name">Archive</span><span class="sec-cnt">${arch.length} article${arch.length!==1?'s':''}</span><div class="sec-line"></div><button class="arch-btn" id="archBtn" onclick="toggleArch()">${showArch?'▲ Hide':'▼ Show'}</button></div><div id="archGrid" style="${showArch?'':'display:none'}"><div class="arts-list">${arch.map(cardHtml).join('')}</div></div>`;
   if(!html)html=`<div class="state-box"><div class="state-icon">⏳</div><div class="state-title">Loading…</div><div class="state-desc">Articles arriving from cloud</div></div>`;
   outer.innerHTML=html;
@@ -593,18 +748,37 @@ function renderFeedList(){
     const icon=s==='load'||s==='loading'?`<span class="feed-st st-load">↻</span>`:s==='ok'?`<span class="feed-st st-ok">✓</span>`:s==='err'||s==='error'?`<span class="feed-st st-err" onclick="retryFeed('${f.id}')" title="Click to retry">↺</span>`:`<span class="feed-st" style="color:var(--border)">·</span>`;
     const isCust=customFeeds.some(c=>c.id===f.id);
     const isActive=activeFeed===f.id;
-    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="removeFeed('${f.id}')">✕</button>`:''} ${icon}</div>`;
+    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="event.stopPropagation();openModal('${f.id}')" title="Edit feed" style="display:none">✎</button><button class="feed-rm" onclick="event.stopPropagation();removeFeed('${f.id}')" title="Remove feed">✕</button>`:''} ${icon}</div>`;
   }).join('');
 }
 
 // ── Custom feeds ─────────────────────────────────────────────
-function openModal(){document.getElementById('overlay').classList.add('open');setTimeout(()=>document.getElementById('fName').focus(),50)}
-function closeModal(){document.getElementById('overlay').classList.remove('open');['fName','fUrl'].forEach(id=>document.getElementById(id).value='')}
+function openModal(editId){
+  editingFeedId=editId||null;
+  document.getElementById('modalTitle').textContent=editId?'Edit Feed':'Add Custom Feed';
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fName').focus(),50);
+}
+function closeModal(){
+  editingFeedId=null;
+  document.getElementById('overlay').classList.remove('open');
+  ['fName','fUrl'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCat').value='ai';
+}
 function ovClick(e){if(e.target===document.getElementById('overlay'))closeModal()}
 
 async function saveFeed(){
   const name=document.getElementById('fName').value.trim(),url=document.getElementById('fUrl').value.trim(),cat=document.getElementById('fCat').value;
   if(!name||!url){toast('Please fill in both fields');return}
+  if(editingFeedId){
+    const idx=customFeeds.findIndex(f=>f.id===editingFeedId);
+    const fidx=feeds.findIndex(f=>f.id===editingFeedId);
+    if(idx>-1)customFeeds[idx]={...customFeeds[idx],name,url,cat};
+    if(fidx>-1)feeds[fidx]={...feeds[fidx],name,url,cat};
+    localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+    closeModal();renderFeedList();renderArticles();toast(`"${name}" updated`);
+    return;
+  }
   const feed={id:'c_'+Date.now(),name,url,cat};
   closeModal();toast(`Adding "${name}"…`);
   customFeeds.push(feed);feeds.push(feed);localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
@@ -628,6 +802,156 @@ function toast(msg){
   document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
 }
 
+// ── Muted keywords ───────────────────────────────────────────
+function addMuted(e){
+  if(e.key!=='Enter')return;
+  const inp=document.getElementById('mutedInput'),w=inp.value.trim().toLowerCase();
+  if(!w)return;mutedWords.add(w);inp.value='';
+  localStorage.setItem('nh_muted',JSON.stringify([...mutedWords]));
+  renderMutedList();renderArticles();updateCounts();toast('🔇 "'+w+'" muted');
+}
+function removeMuted(w){
+  mutedWords.delete(w);localStorage.setItem('nh_muted',JSON.stringify([...mutedWords]));
+  renderMutedList();renderArticles();updateCounts();toast('"'+w+'" unmuted');
+}
+function renderMutedList(){
+  const el=document.getElementById('mutedList');if(!el)return;
+  el.innerHTML=[...mutedWords].map(w=>`<span class="muted-tag">${esc(w)}<button onclick="removeMuted('${esc(w)}')">×</button></span>`).join('');
+}
+function toggleMutedPanel(){
+  const w=document.getElementById('mutedWrap');if(w)w.style.display=w.style.display==='none'?'':'none';
+}
+
+// ── Sort order ───────────────────────────────────────────────
+function setSortOrder(v){
+  sortOrder=v;localStorage.setItem('nh_sort',v);updateURL();renderArticles();
+}
+
+// ── Multi-column layout ──────────────────────────────────────
+function cycleLayout(){
+  colLayout=colLayout>=3?1:colLayout+1;
+  localStorage.setItem('nh_col',colLayout);
+  const o=document.getElementById('artsOuter');
+  o.classList.remove('col2','col3');
+  if(colLayout===2)o.classList.add('col2');
+  if(colLayout===3)o.classList.add('col3');
+  const icons=['⊟','⊞','⊚'];
+  const btn=document.getElementById('colBtn');if(btn)btn.textContent=icons[colLayout-1];
+  toast(['Single column','2 columns','3 columns'][colLayout-1]);
+}
+
+// ── Font size ────────────────────────────────────────────────
+function adjustFont(d){
+  fontSize=Math.round(Math.max(0.75,Math.min(1.5,fontSize+d))*100)/100;
+  localStorage.setItem('nh_fs',fontSize);
+  document.documentElement.style.setProperty('--fs',fontSize);
+}
+
+// ── Mark all read / clear history ────────────────────────────
+function markAllRead(){
+  visible().forEach(a=>{readSet.add(a.id)});
+  localStorage.setItem('nh_read',JSON.stringify([...readSet].slice(-5000)));
+  renderArticles();updateCounts();toast('✓ All marked as read');
+}
+function clearHistory(){
+  histArts=[];localStorage.removeItem('nh_hist_arts');
+  updateCounts();renderArticles();toast('History cleared');
+}
+
+// ── OPML import ──────────────────────────────────────────────
+function triggerOPMLImport(){document.getElementById('opmlInput').click()}
+async function handleOPML(e){
+  const file=e.target.files[0];if(!file)return;
+  const text=await file.text();
+  try{
+    const doc=new DOMParser().parseFromString(text,'text/xml');
+    if(doc.querySelector('parsererror'))throw 0;
+    const outlines=doc.querySelectorAll('outline[xmlUrl]');
+    let added=0;
+    outlines.forEach(o=>{
+      const url=o.getAttribute('xmlUrl'),name=o.getAttribute('text')||o.getAttribute('title')||url;
+      if(!url||customFeeds.some(f=>f.url===url)||DEFAULT_FEEDS.some(f=>f.url===url))return;
+      const feed={id:'c_'+Date.now()+'_'+added,name,url,cat:'general'};
+      customFeeds.push(feed);feeds.push(feed);added++;
+    });
+    localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+    renderFeedList();toast('Imported '+added+' feed'+(added!==1?'s':''));
+  }catch(err){toast('Invalid OPML file');}
+  e.target.value='';
+}
+
+// ── OPML export ──────────────────────────────────────────────
+function exportOPML(){
+  if(!customFeeds.length){toast('No custom feeds to export');return}
+  const cats={};
+  customFeeds.forEach(f=>{if(!cats[f.cat])cats[f.cat]=[];cats[f.cat].push(f)});
+  let xml='<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head><title>NewsHub Feeds</title></head>\n  <body>\n';
+  Object.entries(cats).forEach(([cat,fs])=>{
+    xml+='    <outline text="'+(CAT_LABELS[cat]||cat)+'" title="'+(CAT_LABELS[cat]||cat)+'">\n';
+    fs.forEach(f=>{xml+='      <outline type="rss" text="'+esc(f.name)+'" title="'+esc(f.name)+'" xmlUrl="'+esc(f.url)+'"/>\n'});
+    xml+='    </outline>\n';
+  });
+  xml+='  </body>\n</opml>';
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([xml],{type:'text/xml'})),download:'newshub-feeds.opml'});
+  a.click();toast('OPML exported!');
+}
+
+// ── Article deduplication ────────────────────────────────────
+function dedupeArts(arts){
+  const sig=t=>(t||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ').filter(w=>w.length>3).slice(0,8).sort().join(' ');
+  const seen=new Map();
+  arts.forEach(a=>{
+    const s=sig(a.title);
+    if(!s){seen.set(a.id,{...a,_alts:[]});return}
+    if(!seen.has(s))seen.set(s,{...a,_alts:[]});
+    else if(seen.get(s).source!==a.source)seen.get(s)._alts.push(a.source);
+  });
+  return [...seen.values()];
+}
+
+// ── Browser notifications ────────────────────────────────────
+async function requestNotifPermission(){
+  if(!('Notification' in window))return toast('Notifications not supported');
+  const p=await Notification.requestPermission();
+  if(p==='granted'){toast('🔔 Breaking news notifications enabled');document.getElementById('notifBar').classList.remove('vis')}
+  else toast('Notification permission denied');
+}
+function dismissNotifBar(){
+  localStorage.setItem('nh_notif_dismissed','1');notifDismissed=true;
+  document.getElementById('notifBar').classList.remove('vis');
+}
+function checkBreakingNotifs(arts){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  const newB=arts.filter(a=>a.cat==='breaking'&&!lastBreakingIds.has(a.id));
+  if(newB.length&&lastBreakingIds.size>0){
+    const n=new Notification('🔴 '+newB.length+' new breaking '+(newB.length===1?'story':'stories'),{body:newB[0].title,tag:'nh-breaking'});
+    n.onclick=()=>{window.focus();setCat('breaking');n.close()};
+  }
+  arts.filter(a=>a.cat==='breaking').forEach(a=>lastBreakingIds.add(a.id));
+}
+
+// ── Shareable URL ────────────────────────────────────────────
+function updateURL(){
+  try{
+    const p=new URLSearchParams();
+    if(activeCat!=='all')p.set('cat',activeCat);
+    if(activeFeed)p.set('feed',activeFeed);
+    if(timeFilter!=='all')p.set('tf',timeFilter);
+    if(sortOrder!=='newest')p.set('sort',sortOrder);
+    const q=p.toString();
+    history.replaceState(null,'',q?window.location.pathname+'?'+q:window.location.pathname);
+  }catch(e){}
+}
+function restoreFromURL(){
+  try{
+    const p=new URLSearchParams(window.location.search);
+    if(p.get('cat')&&CAT_LABELS[p.get('cat')])activeCat=p.get('cat');
+    if(p.get('feed'))activeFeed=p.get('feed');
+    if(p.get('tf'))timeFilter=p.get('tf');
+    if(p.get('sort'))sortOrder=p.get('sort');
+  }catch(e){}
+}
+
 // ── Theme ────────────────────────────────────────────────────
 function toggleTheme(){
   darkMode=!darkMode;
@@ -641,7 +965,7 @@ if(localStorage.getItem('nh_theme')==='light'){darkMode=false;document.documentE
 function setTimeFilter(tf){
   timeFilter=tf;
   document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
-  renderArticles();
+  updateURL();renderArticles();
 }
 
 // ── Density toggle ───────────────────────────────────────────
@@ -657,7 +981,20 @@ function openHelp(){document.getElementById('helpOverlay').classList.add('open')
 function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
 
 // ── Boot ──────────────────────────────────────────────────────
+restoreFromURL();
 feeds=[...DEFAULT_FEEDS,...customFeeds];
+// Restore font size
+if(fontSize!==1)document.documentElement.style.setProperty('--fs',fontSize);
+// Restore column layout
+if(colLayout===2){document.getElementById('artsOuter').classList.add('col2');const b=document.getElementById('colBtn');if(b)b.textContent='⊞'}
+if(colLayout===3){document.getElementById('artsOuter').classList.add('col3');const b=document.getElementById('colBtn');if(b)b.textContent='⊚'}
+// Restore sort
+const ss=document.getElementById('sortSel');if(ss)ss.value=sortOrder;
+// Render muted list
+renderMutedList();
+// Sync category buttons from restored URL state
+document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===activeCat));
+document.getElementById('tbTitle').textContent=CAT_LABELS[activeCat]||'All Sources';
 renderFeedList();updateCounts();refreshAll();
 </script>
 </body>
