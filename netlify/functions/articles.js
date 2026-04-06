@@ -65,6 +65,20 @@ const DEFAULT_FEEDS = [
   {id:'guardian-world',name:'Guardian World',url:'https://www.theguardian.com/world/rss',cat:'breaking'},
   {id:'reuters',name:'Reuters',url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',cat:'breaking'},
   {id:'sky-news',name:'Sky News',url:'https://feeds.skynews.com/feeds/rss/world.xml',cat:'breaking'},
+  // Sports
+  {id:'espn',name:'ESPN Top Stories',url:'https://www.espn.com/espn/rss/news',cat:'sports'},
+  {id:'espn-nba',name:'ESPN NBA',url:'https://www.espn.com/espn/rss/nba/news',cat:'sports'},
+  {id:'espn-nfl',name:'ESPN NFL',url:'https://www.espn.com/espn/rss/nfl/news',cat:'sports'},
+  {id:'espn-soccer',name:'ESPN Soccer',url:'https://www.espn.com/espn/rss/soccer/news',cat:'sports'},
+  {id:'bbc-sport',name:'BBC Sport',url:'https://feeds.bbci.co.uk/sport/rss.xml',cat:'sports'},
+  {id:'bbc-football',name:'BBC Sport Football',url:'https://feeds.bbci.co.uk/sport/football/rss.xml',cat:'sports'},
+  {id:'sky-sports',name:'Sky Sports',url:'https://www.skysports.com/rss/12040',cat:'sports'},
+  {id:'fotmob',name:'FotMob',url:'https://news.google.com/rss/search?q=fotmob+football+news',cat:'sports'},
+  {id:'athletic',name:'The Athletic',url:'https://news.google.com/rss/search?q=site:theathletic.com',cat:'sports'},
+  {id:'bleacher-report',name:'Bleacher Report',url:'https://news.google.com/rss/search?q=site:bleacherreport.com',cat:'sports'},
+  {id:'sports-illustrated',name:'Sports Illustrated',url:'https://news.google.com/rss/search?q=site:si.com',cat:'sports'},
+  {id:'nba-official',name:'NBA.com News',url:'https://news.google.com/rss/search?q=site:nba.com',cat:'sports'},
+  {id:'nfl-official',name:'NFL.com News',url:'https://news.google.com/rss/search?q=site:nfl.com',cat:'sports'},
 ];
 
 function stripTags(html) {
