@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="manifest" href="/newshub/manifest.json">
+  <meta name="theme-color" content="#131417">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="NewsHub">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NewsHub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -196,7 +200,28 @@
     .notif-bar.vis{display:flex}
     .notif-btn{padding:3px 10px;border:1px solid rgba(220,38,38,.4);border-radius:20px;background:none;color:#ff6b6b;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
     .notif-btn:hover{background:rgba(220,38,38,.15)}
-  </style>
+  
+/* ─── Pagination */
+.load-more-bar{text-align:center;padding:16px 0 8px}
+.load-more-btn{background:var(--card);border:1px solid var(--border);color:var(--fg);padding:8px 20px;border-radius:20px;cursor:pointer;font-size:13px;transition:background .2s}
+.load-more-btn:hover{background:var(--hover)}
+.lm-cnt{opacity:.6;font-size:11px;margin-left:6px}
+/* ─── Share button */
+.share-btn{position:absolute;top:8px;right:36px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;opacity:0;transition:opacity .2s;line-height:1}
+.card:hover .share-btn{opacity:1}
+.share-btn:hover{background:var(--hover);color:var(--fg)}
+/* ─── Read time */
+.read-time{font-size:10px;color:var(--muted);background:var(--hover);padding:1px 5px;border-radius:8px;margin-left:4px}
+/* ─── Search highlight */
+mark{background:rgba(250,204,21,.3);color:inherit;border-radius:2px;padding:0 1px}
+/* ─── Sport filter pills */
+.sf-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:4px 12px;border-radius:16px;cursor:pointer;font-size:12px;transition:all .15s}
+.sf-btn.active,.sf-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+/* ─── Card thumbnail */
+.card-thumb{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:8px;display:block}
+/* ─── Feed toggle */
+.feed-row:hover .feed-rm{display:inline-flex!important}
+</style>
 </head>
 <body>
 <div class="app">
@@ -206,7 +231,7 @@
     <div class="sb-head">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="logo"><span class="logo-icon">⚡</span>NewsHub</div>
-        <button class="ico-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
+        <button class="ico-btn" id="themeBtn" aria-label="Toggle theme" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
       </div>
       <div class="mode-badge mode-cloud"><span class="mode-dot"></span>🌐 Cloud</div>
       <div class="upd-txt" id="updTxt">Never refreshed</div>
@@ -241,6 +266,7 @@
       <div class="opml-row">
         <button class="opml-btn" onclick="triggerOPMLImport()" title="Import feeds from an OPML file">📥 Import OPML</button>
         <button class="opml-btn" onclick="exportOPML()" title="Export custom feeds as OPML">📤 Export OPML</button>
+      <button class="opml-btn" onclick="exportBookmarks()" title="Export bookmarks as CSV">🔖 Export Bookmarks</button>
       </div>
       <input type="file" id="opmlInput" accept=".opml,.xml" style="display:none" onchange="handleOPML(event)">
     </div>
@@ -259,9 +285,10 @@
         <button class="fs-btn" onclick="adjustFont(0.1)"  title="Increase font size">A+</button>
       </div>
       <button class="ico-btn" id="colBtn"     onclick="cycleLayout()"   title="Toggle column layout">⊟</button>
-      <button class="ico-btn" id="densityBtn" onclick="toggleDensity()" title="Toggle compact view">⊞</button>
+      <button class="ico-btn" id="densityBtn" aria-label="Toggle density" onclick="toggleDensity()" title="Toggle compact view">⊞</button>
+      <select id="refreshSel" title="Auto-refresh interval" aria-label="Auto-refresh interval" onchange="REFRESH_INTERVAL=parseInt(this.value);localStorage.setItem('nh_refresh_interval',this.value);updateNextLabel()" style="font-size:11px;background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:3px 6px;cursor:pointer"><option value="0">Manual</option><option value="30">30m</option><option value="60">1h</option><option value="180" selected>3h</option><option value="360">6h</option></select>
       <button class="ico-btn" onclick="openHelp()" title="Keyboard shortcuts (?)">⌨</button>
-      <button class="ref-btn" id="refBtn" onclick="refreshAll()">
+      <button class="ref-btn" id="refBtn" aria-label="Refresh feeds" onclick="refreshAll()">
         <span class="ref-ico" id="refIco">↻</span> Refresh
       </button>
     </div>
@@ -356,7 +383,7 @@
 'use strict';
 
 // ── Config ──────────────────────────────────────────────────
-const REFRESH_HRS  = [9,12,15,18,21];
+let REFRESH_INTERVAL = parseInt(localStorage.getItem('nh_refresh_interval')||'180');
 const ARCHIVE_DAYS = 7;
 const CAT_COLORS   = {ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706',breaking:'#dc2626',sports:'#16a34a',custom:'#0891b2'};
 const CAT_LABELS   = {all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',breaking:'Breaking News',sports:'Sports',custom:'My Feeds',bookmarks:'Bookmarks'};
@@ -447,12 +474,12 @@ const DEFAULT_FEEDS = [
   {id:'bbc-sport',name:'BBC Sport',url:'https://feeds.bbci.co.uk/sport/rss.xml',cat:'sports'},
   {id:'bbc-football',name:'BBC Sport Football',url:'https://feeds.bbci.co.uk/sport/football/rss.xml',cat:'sports'},
   {id:'sky-sports',name:'Sky Sports',url:'https://www.skysports.com/rss/12040',cat:'sports'},
-  {id:'fotmob',name:'FotMob',url:'https://news.google.com/rss/search?q=fotmob+football+news',cat:'sports'},
-  {id:'athletic',name:'The Athletic',url:'https://news.google.com/rss/search?q=site:theathletic.com',cat:'sports'},
-  {id:'bleacher-report',name:'Bleacher Report',url:'https://news.google.com/rss/search?q=site:bleacherreport.com',cat:'sports'},
-  {id:'sports-illustrated',name:'Sports Illustrated',url:'https://news.google.com/rss/search?q=site:si.com',cat:'sports'},
-  {id:'nba-official',name:'NBA.com News',url:'https://news.google.com/rss/search?q=site:nba.com',cat:'sports'},
-  {id:'nfl-official',name:'NFL.com News',url:'https://news.google.com/rss/search?q=site:nfl.com',cat:'sports'},
+  {id:'fotmob',name:'FotMob',url:'https://news.google.com/rss/search?q=fotmob+football+news&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'athletic',name:'The Athletic',url:'https://news.google.com/rss/search?q=site:theathletic.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'bleacher-report',name:'Bleacher Report',url:'https://news.google.com/rss/search?q=site:bleacherreport.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'sports-illustrated',name:'Sports Illustrated',url:'https://news.google.com/rss/search?q=site:si.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'nba-official',name:'NBA.com News',url:'https://news.google.com/rss/search?q=site:nba.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'nfl-official',name:'NFL.com News',url:'https://news.google.com/rss/search?q=site:nfl.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
 ];
 
 // ── State ───────────────────────────────────────────────────
@@ -471,7 +498,8 @@ let statuses={}, feeds=[];
 const readSet   = new Set(JSON.parse(localStorage.getItem('nh_read')||'[]'));
 const bmSet     = new Set(JSON.parse(localStorage.getItem('nh_bm')||'[]'));
 let   bmArts    = JSON.parse(localStorage.getItem('nh_bm_arts')||'[]');
-let   customFeeds = JSON.parse(localStorage.getItem('nh_custom')||'[]');
+let   customFeeds   = JSON.parse(localStorage.getItem('nh_custom')||'[]');
+let   disabledFeeds = new Set(JSON.parse(localStorage.getItem('nh_disabled')||'[]'));
 
 // ── Helpers ─────────────────────────────────────────────────
 function cl(s){if(!s)return'';return(s+'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim()}
@@ -534,6 +562,7 @@ async function refreshAll(){
 
     // Assign a stable client-side ID to each article
     allArts=serverArts.map(a=>({...a,id:a.feedId+'::'+a.link}));
+    try{localStorage.setItem('nh_cache',JSON.stringify({ts:Date.now(),arts:serverArts}))}catch(e){}
 
     // Mark all default feeds as ok
     DEFAULT_FEEDS.forEach(f=>statuses[f.id]='ok');
@@ -566,14 +595,25 @@ async function refreshAll(){
 
   }catch(e){
     DEFAULT_FEEDS.forEach(f=>statuses[f.id]='err');
-    showStats('Could not reach server',0,1,true);
-    document.getElementById('artsOuter').innerHTML=`<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Could not load articles</div><div class="state-desc">Check your connection and try refreshing</div></div>`;
-    toast('Load failed — check connection');
+    const cached=JSON.parse(localStorage.getItem('nh_cache')||'null');
+    if(cached&&cached.arts){
+      allArts=cached.arts.map(a=>({...a,id:a.feedId+'::'+a.link}));
+      allArts=dedupeArts(allArts);
+      const minsAgo=Math.round((Date.now()-cached.ts)/60000);
+      updateCounts();renderArticles();
+      showStats(`Cached (${minsAgo}m ago)`,allArts.length,1,true);
+      toast(`⚠️ Offline — showing cached articles from ${minsAgo}m ago`);
+    } else {
+      showStats('Could not reach server',0,1,true);
+      document.getElementById('artsOuter').innerHTML=`<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Could not load articles</div><div class="state-desc">Check your connection and try refreshing</div></div>`;
+      toast('Load failed — check connection');
+    }
   }
 
   loading=false;btn.disabled=false;ico.classList.remove('spinning');
   document.getElementById('progBar').style.width='100%';
   setTimeout(()=>document.getElementById('progBar').style.width='0%',900);
+  localStorage.setItem('nh_last_refresh',Date.now());
   document.getElementById('updTxt').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   renderFeedList();
 }
@@ -589,21 +629,22 @@ async function retryFeed(){refreshAll()}  // cloud: retry = full refresh
 
 // ── Auto-refresh timer ───────────────────────────────────────
 function checkAutoRefresh(){
-  const now=new Date(),h=now.getHours(),m=now.getMinutes();
-  if(REFRESH_HRS.includes(h)&&m===0){
-    const key=`nh_ar_${h}_${now.toDateString()}`;
-    if(!localStorage.getItem(key)){localStorage.setItem(key,'1');refreshAll()}
-  }
+  if(REFRESH_INTERVAL===0)return;
+  const lastRefresh=parseInt(localStorage.getItem('nh_last_refresh')||'0');
+  const minsSince=Math.round((Date.now()-lastRefresh)/60000);
+  if(minsSince>=REFRESH_INTERVAL&&lastRefresh>0)refreshAll();
   updateNextLabel();
 }
 function updateNextLabel(){
-  const now=new Date(),h=now.getHours(),m=now.getMinutes();
-  const next=REFRESH_HRS.find(rh=>rh>h||(rh===h&&m<1));
-  const el=document.getElementById('nextRef');
-  if(next!==undefined){const lbl=next===12?'12:00 PM':next>12?`${next-12}:00 PM`:`${next}:00 AM`;el.innerHTML=`Next refresh at <span>${lbl}</span>`}
-  else{el.innerHTML=`Next refresh <span>tomorrow 9:00 AM</span>`}
+  const el=document.getElementById('nextLbl');if(!el)return;
+  if(REFRESH_INTERVAL===0){el.textContent='Manual only';return}
+  const lr=parseInt(localStorage.getItem('nh_last_refresh')||'0');
+  if(!lr){el.textContent='Auto: '+REFRESH_INTERVAL+'m';return}
+  const minsLeft=Math.max(0,Math.round((lr+REFRESH_INTERVAL*60000-Date.now())/60000));
+  el.textContent=minsLeft>0?'Next in '+minsLeft+'m':'Refreshing soon';
 }
-setInterval(checkAutoRefresh,60000);updateNextLabel();
+setInterval(checkAutoRefresh,60000);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/newshub/sw.js').catch(()=>{});}updateNextLabel();
 
 // Keyboard shortcuts
 document.addEventListener('keydown',e=>{
@@ -628,6 +669,11 @@ document.addEventListener('keydown',e=>{
 });
 
 // ── Bookmarks ────────────────────────────────────────────────
+function setSportFilter(f){
+  sportFilter=f;artPage=1;
+  document.querySelectorAll('.sf-btn').forEach(b=>b.classList.toggle('active',b.dataset.sf===f));
+  renderArticles();
+}
 function toggleBm(id,el,ev){
   ev.preventDefault();ev.stopPropagation();
   const art=allArts.find(a=>a.id===id)||bmArts.find(a=>a.id===id);
@@ -640,7 +686,9 @@ function toggleBm(id,el,ev){
 
 // ── Category / search ────────────────────────────────────────
 function setCat(cat){
-  activeCat=cat;activeFeed=null;
+  activeCat=cat;activeFeed=null;artPage=1;
+  if(cat!=='sports')sportFilter='all';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cat===cat));
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
   document.getElementById('tbTitle').textContent=CAT_LABELS[cat]||cat;
   if(cat==='breaking'&&!notifDismissed&&Notification&&Notification.permission==='default'){
@@ -656,14 +704,17 @@ function setFeed(id){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   updateURL();renderFeedList();renderArticles();
 }
-function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles()}
+function onSearch(v){searchQ=v.toLowerCase().trim();artPage=1;renderArticles()}
 
 function visible(){
   if(activeCat==='bookmarks'){let a=bmArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ));return a}
+  var sfBar=document.getElementById('sportFilterBar');if(sfBar)sfBar.style.display=activeCat==='sports'?'flex':'none';
   if(activeCat==='history'){let a=histArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ));return a}
   let a=allArts;
   if(activeFeed)a=a.filter(x=>x.feedId===activeFeed);
   else if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
+  if(disabledFeeds.size)a=a.filter(x=>!disabledFeeds.has(x.feedId)||customFeeds.some(f=>f.id===x.feedId));
+  if(activeCat==='sports'&&sportFilter!=='all'){var sfMap={nba:['espn-nba','nba-official'],nfl:['espn-nfl','nfl-official'],soccer:['espn-soccer','bbc-football','fotmob'],general:['espn','bbc-sport','sky-sports','athletic','bleacher-report','sports-illustrated']};var sfIds=sfMap[sportFilter]||[];a=a.filter(x=>sfIds.includes(x.feedId));}
   if(timeFilter!=='all'){const cutoff=Date.now()-parseInt(timeFilter)*3600000;a=a.filter(x=>toTS(x.date)>=cutoff)}
   if(mutedWords.size)a=a.filter(x=>![...mutedWords].some(w=>(x.title+' '+(x.desc||'')).toLowerCase().includes(w)));
   if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));
@@ -706,14 +757,15 @@ function isRecent(d){return toTS(d)>0&&Date.now()-toTS(d)<ARCHIVE_DAYS*86400000}
 function cardHtml(a){
   const isBm=bmSet.has(a.id),isRead=readSet.has(a.id),color=CAT_COLORS[a.cat]||'#555';
   return `<a class="card${isRead?' read':''}" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" data-id="${esc(a.id)}" onclick="onCardClick(this)">
-    <button class="bm-btn${isBm?' saved':''}" onclick="toggleBm('${esc(a.id)}',this,event)" title="${isBm?'Remove bookmark':'Bookmark'}">🔖</button>
+    <button class="bm-btn${isBm?' saved':''}" onclick="toggleBm('${esc(a.id)}',this,event)" aria-label="${isBm?'Remove bookmark':'Bookmark'}">🔖</button>${navigator.share?`<button class="share-btn" onclick="event.preventDefault();navigator.share({title:'${esc(a.title).replace(/'/g,'')}',url:'${esc(a.link)}'})" aria-label="Share article">↗</button>`:''}
     <div class="art-meta">
       <span class="src-pill" style="background:${color}">${esc(a.source)}</span>
       ${a._alts&&a._alts.length?`<span class="multi-src">+${a._alts.length} source${a._alts.length>1?'s':''}</span>`:''}
       ${isNew(a.date)?'<span class="new-pill">New</span>':''}
-      <span class="art-date">${fmtDate(a.date)}</span>
+      <span class="art-date">${fmtDate(a.date)}</span>${(()=>{const wc=(a.desc||'').split(/\s+/).filter(Boolean).length;return wc>30?`<span class="read-time">~${Math.ceil(wc/200)}m read</span>`:''})()}
     </div>
-    <div class="art-title">${esc(a.title)}</div>
+    <div class="art-title">${searchQ?esc(a.title).replace(new RegExp('('+searchQ.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+')','gi'),'<mark>$1</mark>'):esc(a.title)}</div>
+    ${a.img?`<img class="card-thumb" src="${esc(a.img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
     ${a.desc?`<div class="art-desc">${esc(a.desc)}</div>`:''}
   </a>`;
 }
@@ -727,7 +779,8 @@ function onCardClick(el){
       histArts=histArts.filter(a=>a.id!==id);
       histArts.unshift({id:art.id,title:art.title,link:art.link,source:art.source,cat:art.cat,date:art.date});
       if(histArts.length>300)histArts=histArts.slice(0,300);
-      localStorage.setItem('nh_hist_arts',JSON.stringify(histArts));
+      if(histArts.length>100)histArts=histArts.slice(-100);
+  localStorage.setItem('nh_hist_arts',JSON.stringify(histArts));
       updateCounts();
     }
   }
@@ -737,17 +790,23 @@ function renderArticles(){
   const outer=document.getElementById('artsOuter'),arts=visible();
   if(!arts.length&&!loading){
     const isBm=activeCat==='bookmarks';
-    outer.innerHTML=`<div class="state-box"><div class="state-icon">${searchQ?'🔍':isBm?'🔖':'📭'}</div><div class="state-title">${searchQ?'No results':isBm?'No bookmarks yet':'No articles yet'}</div><div class="state-desc">${searchQ?'Try a different search':isBm?'Click 🔖 on any article to save it':'Click Refresh to load your feeds'}</div></div>`;
+    const isCustomEmpty=activeCat==='custom'&&customFeeds.length===0;
+    outer.innerHTML=`<div class="state-box"><div class="state-icon">${searchQ?'🔍':isBm?'🔖':isCustomEmpty?'📌':'📭'}</div><div class="state-title">${searchQ?'No results':isBm?'No bookmarks yet':isCustomEmpty?'No custom feeds yet':'No articles yet'}</div><div class="state-desc">${searchQ?'Try a different search':isBm?'Click 🔖 on any article to save it':isCustomEmpty?'Click the + button in the sidebar to add your first custom feed':'Click Refresh to load your feeds'}</div></div>`;
     return;
   }
+  var sfBar=document.getElementById('sportFilterBar');if(sfBar)sfBar.style.display=activeCat==='sports'?'flex':'none';
   if(activeCat==='history'){
     outer.innerHTML=arts.length?`<div class="sec-hdr"><span class="sec-name">Reading History</span><span class="sec-cnt">${arts.length} articles</span><div class="sec-line"></div><button class="mark-btn" onclick="clearHistory()">✕ Clear history</button></div><div class="arts-list">${arts.map(cardHtml).join('')}</div>`:`<div class="state-box"><div class="state-icon">🕑</div><div class="state-title">No history yet</div><div class="state-desc">Articles you open will appear here</div></div>`;
     return;
   }
   const recent=arts.filter(a=>isRecent(a.date)),arch=arts.filter(a=>!isRecent(a.date));
+  const paged=arts.slice(0,artPage*PAGE_SIZE);
+  const pagedRecent=paged.filter(a=>isRecent(a.date)),pagedArch=paged.filter(a=>!isRecent(a.date));
+  const hasMore=paged.length<arts.length;
   let html='';
-  if(recent.length)html+=`<div class="sec-hdr"><span class="sec-name">Recent</span><span class="sec-cnt">${recent.length} article${recent.length!==1?'s':''}</span><div class="sec-line"></div><button class="mark-btn" onclick="markAllRead()">✓ Mark all read</button></div><div class="arts-list">${recent.map(cardHtml).join('')}</div>`;
-  if(arch.length)html+=`<div class="sec-hdr"><span class="sec-name">Archive</span><span class="sec-cnt">${arch.length} article${arch.length!==1?'s':''}</span><div class="sec-line"></div><button class="arch-btn" id="archBtn" onclick="toggleArch()">${showArch?'▲ Hide':'▼ Show'}</button></div><div id="archGrid" style="${showArch?'':'display:none'}"><div class="arts-list">${arch.map(cardHtml).join('')}</div></div>`;
+  if(pagedRecent.length)html+=`<div class="sec-hdr"><span class="sec-name">Recent</span><span class="sec-cnt">${recent.length} article${recent.length!==1?'s':''}</span><div class="sec-line"></div><button class="mark-btn" aria-label="Mark all read" onclick="markAllRead()">✓ Mark all read</button></div><div class="arts-list">${pagedRecent.map(cardHtml).join('')}</div>`;
+  if(pagedArch.length)html+=`<div class="sec-hdr"><span class="sec-name">Archive</span><span class="sec-cnt">${arch.length} article${arch.length!==1?'s':''}</span><div class="sec-line"></div><button class="arch-btn" id="archBtn" onclick="toggleArch()">${showArch?'▲ Hide':'▼ Show'}</button></div><div id="archGrid" style="${showArch?'':`display:none`}"><div class="arts-list">${pagedArch.map(cardHtml).join('')}</div></div>`;
+  if(hasMore)html+=`<div class="load-more-bar"><button class="load-more-btn" onclick="artPage++;renderArticles()">Load more <span class="lm-cnt">${arts.length-paged.length} remaining</span></button></div>`;
   if(!html)html=`<div class="state-box"><div class="state-icon">⏳</div><div class="state-title">Loading…</div><div class="state-desc">Articles arriving from cloud</div></div>`;
   outer.innerHTML=html;
 }
@@ -765,7 +824,8 @@ function renderFeedList(){
     const icon=s==='load'||s==='loading'?`<span class="feed-st st-load">↻</span>`:s==='ok'?`<span class="feed-st st-ok">✓</span>`:s==='err'||s==='error'?`<span class="feed-st st-err" onclick="retryFeed('${f.id}')" title="Click to retry">↺</span>`:`<span class="feed-st" style="color:var(--border)">·</span>`;
     const isCust=customFeeds.some(c=>c.id===f.id);
     const isActive=activeFeed===f.id;
-    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="event.stopPropagation();openModal('${f.id}')" title="Edit feed" style="display:none">✎</button><button class="feed-rm" onclick="event.stopPropagation();removeFeed('${f.id}')" title="Remove feed">✕</button>`:''} ${icon}</div>`;
+    const isDis=disabledFeeds.has(f.id);
+    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}${isDis?';opacity:.45':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="event.stopPropagation();openModal('${f.id}')" title="Edit feed" style="display:none">✎</button><button class="feed-rm" onclick="event.stopPropagation();removeFeed('${f.id}')" title="Remove feed">✕</button>`:`<button class="feed-rm" onclick="event.stopPropagation();toggleFeedDisabled('${f.id}')" title="${isDis?'Enable':'Disable'} this feed" style="display:none">${isDis?'◉':'◎'}</button>`} ${icon}</div>`;
   }).join('');
 }
 
@@ -806,6 +866,12 @@ async function saveFeed(){
   updateCounts();renderFeedList();renderArticles();toast(`"${name}" added`);
 }
 
+function toggleFeedDisabled(id){
+  if(disabledFeeds.has(id))disabledFeeds.delete(id);
+  else disabledFeeds.add(id);
+  localStorage.setItem('nh_disabled',JSON.stringify([...disabledFeeds]));
+  updateCounts();renderArticles();renderFeedList();
+}
 async function removeFeed(id){
   customFeeds=customFeeds.filter(f=>f.id!==id);localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
   feeds=feeds.filter(f=>f.id!==id);allArts=allArts.filter(a=>a.feedId!==id);delete statuses[id];
@@ -898,6 +964,14 @@ async function handleOPML(e){
 }
 
 // ── OPML export ──────────────────────────────────────────────
+function exportBookmarks(){
+  if(!bmArts.length)return toast('No bookmarks to export');
+  const rows=['Title,URL,Source,Date,Category',''];
+  bmArts.forEach(a=>{rows.push([a.title,a.link,a.source,a.date||'',a.cat].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(','));});
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const el=document.createElement('a');el.href=URL.createObjectURL(blob);el.download='newshub-bookmarks.csv';el.click();
+  toast(`✓ Exported ${bmArts.length} bookmarks`);
+}
 function exportOPML(){
   if(!customFeeds.length){toast('No custom feeds to export');return}
   const cats={};
