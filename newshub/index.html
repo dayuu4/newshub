@@ -486,6 +486,9 @@ const DEFAULT_FEEDS = [
 let allArts=[], activeCat='all', activeFeed=null, searchQ='', loading=false, showArch=false;
 let timeFilter='all', compactMode=false, darkMode=true;
 let sortOrder=localStorage.getItem('nh_sort')||'newest';
+let artPage=1;
+const PAGE_SIZE=100;
+let sportFilter='all';
 let colLayout=parseInt(localStorage.getItem('nh_col')||'1');
 let fontSize=parseFloat(localStorage.getItem('nh_fs')||'1');
 let mutedWords=new Set(JSON.parse(localStorage.getItem('nh_muted')||'[]'));
