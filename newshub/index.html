@@ -527,8 +527,8 @@ function renderFeedList(){
     const s=statuses[f.id]||'pending';
     const icon=s==='load'||s==='loading'?`<span class="feed-st st-load">↻</span>`:s==='ok'?`<span class="feed-st st-ok">✓</span>`:s==='err'||s==='error'?`<span class="feed-st st-err" onclick="retryFeed('${f.id}')" title="Click to retry">↺</span>`:`<span class="feed-st" style="color:var(--border)">·</span>`;
     const isCust=customFeeds.some(c=>c.id===f.id);
-    return `const isActive=activeFeed===f.id;
-    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}">><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="removeFeed('${f.id}')">✕</button>`:''} ${icon}</div>`;
+    const isActive=activeFeed===f.id;
+    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="removeFeed('${f.id}')">✕</button>`:''} ${icon}</div>`;
   }).join('');
 }
 
