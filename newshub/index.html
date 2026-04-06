@@ -278,7 +278,7 @@ const DEFAULT_FEEDS = [
 ];
 
 // ── State ───────────────────────────────────────────────────
-let allArts=[], activeCat='all', searchQ='', loading=false, showArch=false;
+let allArts=[], activeCat='all', activeFeed=null, searchQ='', loading=false, showArch=false;
 let statuses={}, feeds=[];
 
 const readSet   = new Set(JSON.parse(localStorage.getItem('nh_read')||'[]'));
@@ -436,9 +436,17 @@ function toggleBm(id,el,ev){
 
 // ── Category / search ────────────────────────────────────────
 function setCat(cat){
-  activeCat=cat;
+  activeCat=cat;activeFeed=null;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
   document.getElementById('tbTitle').textContent=CAT_LABELS[cat]||cat;
+  renderFeedList();renderArticles();
+}
+function setFeed(id){
+  if(activeFeed===id){activeFeed=null;renderFeedList();renderArticles();return;}
+  activeFeed=id;
+  const f=feeds.find(x=>x.id===id);
+  document.getElementById('tbTitle').textContent=f?f.name:'Feed';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   renderFeedList();renderArticles();
 }
 function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles()}
@@ -446,7 +454,8 @@ function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles()}
 function visible(){
   if(activeCat==='bookmarks'){let a=bmArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ));return a}
   let a=allArts;
-  if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
+  if(activeFeed)a=a.filter(x=>x.feedId===activeFeed);
+  else if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
   if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));
   return a;
 }
@@ -518,7 +527,8 @@ function renderFeedList(){
     const s=statuses[f.id]||'pending';
     const icon=s==='load'||s==='loading'?`<span class="feed-st st-load">↻</span>`:s==='ok'?`<span class="feed-st st-ok">✓</span>`:s==='err'||s==='error'?`<span class="feed-st st-err" onclick="retryFeed('${f.id}')" title="Click to retry">↺</span>`:`<span class="feed-st" style="color:var(--border)">·</span>`;
     const isCust=customFeeds.some(c=>c.id===f.id);
-    return `<div class="feed-row" title="${esc(f.url||'')}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="removeFeed('${f.id}')">✕</button>`:''} ${icon}</div>`;
+    return `const isActive=activeFeed===f.id;
+    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}">><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="removeFeed('${f.id}')">✕</button>`:''} ${icon}</div>`;
   }).join('');
 }
 
