@@ -118,7 +118,9 @@ function parseFeed(text, feed) {
       const link = lm ? lm[1] : '';
       const date = parseDate(getTag(e,'published') || getTag(e,'updated'));
       const desc = stripTags(getTag(e,'summary') || getTag(e,'content')).slice(0,280);
-      if (link) articles.push({title,link,date,desc,source:feed.name,cat:feed.cat,feedId:feed.id});
+      const imgM=e.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||e.match(/<media:content[^>]+url="([^"]+)"/i)||e.match(/<enclosure[^>]+url="([^"]+)"/i);
+      const img=imgM?imgM[1]:null;
+      if (link) articles.push({title,link,date,desc,img,source:feed.name,cat:feed.cat,feedId:feed.id});
     }
   } else {
     const items = text.match(/<item[\s>][\s\S]*?<\/item>/gi) || [];
@@ -127,7 +129,9 @@ function parseFeed(text, feed) {
       const link = (getTag(it,'link') || getTag(it,'guid') || '').trim();
       const date = parseDate(getTag(it,'pubDate') || getTag(it,'date'));
       const desc = stripTags(getTag(it,'description') || getTag(it,'summary')).slice(0,280);
-      if (link) articles.push({title,link,date,desc,source:feed.name,cat:feed.cat,feedId:feed.id});
+      const imgM=e.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||e.match(/<media:content[^>]+url="([^"]+)"/i)||e.match(/<enclosure[^>]+url="([^"]+)"/i);
+      const img=imgM?imgM[1]:null;
+      if (link) articles.push({title,link,date,desc,img,source:feed.name,cat:feed.cat,feedId:feed.id});
     }
   }
   return articles;
@@ -162,17 +166,27 @@ function fetchFeed(feed, redirects = 0) {
 
 const CORS = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
 
+// In-memory cache — survives warm Lambda invocations
+let _cache = null;
+let _cacheTs = 0;
+const CACHE_TTL_MS = 30 * 60 * 1000;
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return {statusCode:200, headers:CORS, body:''};
+  if (_cache && Date.now() - _cacheTs < CACHE_TTL_MS) {
+    return {statusCode:200,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400','X-Cache':'HIT'},body:_cache};
+  }
   const timeout = (ms) => new Promise(r => setTimeout(() => r([]), ms));
   const results = await Promise.allSettled(
     DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(8500)]))
   );
   const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : []);
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+  const body = JSON.stringify(articles);
+  _cache = body; _cacheTs = Date.now();
   return {
     statusCode: 200,
-    headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400'},
-    body: JSON.stringify(articles),
+    headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400', 'X-Cache':'MISS'},
+    body,
   };
 };
