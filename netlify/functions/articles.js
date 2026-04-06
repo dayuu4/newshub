@@ -52,7 +52,7 @@ function getTag(xml, tag) {
   ];
   for (const p of patterns) {
     const m = xml.match(p);
-    if (m) return m[1].replace(/<![CDATA[([\s\S]*?)]]>/g, '$1').trim();
+    if (m) return m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim();
   }
   return '';
 }
