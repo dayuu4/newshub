@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewsHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Tech Innovation Theme ──────────────────────────────────
+       Electric Blue #0066ff  |  Neon Cyan #00ffff
+       Dark Gray     #1e1e1e  |  White     #ffffff
+    ─────────────────────────────────────────────────────────── */
+    :root {
+      --blue:   #0066ff;  --cyan:   #00ffff;
+      --dark:   #1e1e1e;  --darker: #141414;
+      --card:   #252525;  --border: #333;
+      --text:   #f0f0f0;  --muted:  #a0a0a0;  --faint: #606060;
+      --green:  #00e676;  --red:    #ff5252;  --yellow: #ffd740;
+      --hover:  #2d2d2d;  --sw: 260px;  --r: 8px;
+      --shadow: 0 2px 10px rgba(0,0,0,.6);
+      --glow:   0 0 14px rgba(0,102,255,.3);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter','DejaVu Sans',system-ui,sans-serif;background:var(--darker);color:var(--text);height:100vh;overflow:hidden}
+    .app{display:flex;height:100vh;overflow:hidden}
+
+    /* ── Sidebar ── */
+    .sb{width:var(--sw);background:var(--dark);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+    .sb-head{padding:18px 16px 13px;border-bottom:1px solid var(--border);background:linear-gradient(160deg,#0a0a14 0%,#111827 100%)}
+    .logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;letter-spacing:-.3px;margin-bottom:10px;background:linear-gradient(90deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .logo-icon{-webkit-text-fill-color:initial;font-size:20px}
+    .mode-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.03em}
+    .mode-cloud{background:rgba(0,102,255,.12);color:var(--blue);border:1px solid rgba(0,102,255,.3)}
+    .mode-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .upd-txt{font-size:10.5px;color:var(--faint);margin-top:7px}
+    .next-ref{font-size:10.5px;color:var(--faint);margin-top:2px}
+    .next-ref span{color:var(--cyan);font-weight:600}
+
+    .sb-sec{padding:11px 12px 3px}
+    .sb-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);padding:0 4px;display:block;margin-bottom:4px}
+    .cat-btn{width:100%;text-align:left;padding:7px 10px;border:none;border-radius:var(--r);background:none;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:8px;transition:all .13s;margin-bottom:1px;font-family:inherit}
+    .cat-btn:hover{background:var(--hover);color:var(--text)}
+    .cat-btn.active{background:rgba(0,102,255,.15);color:var(--blue);border-left:2px solid var(--blue);padding-left:8px;font-weight:600}
+    .cat-btn.bm.active{background:rgba(0,255,255,.08);color:var(--cyan);border-color:var(--cyan)}
+    .cat-cnt{margin-left:auto;font-size:11px;font-weight:600;background:var(--border);color:var(--muted);border-radius:10px;padding:1px 7px;min-width:22px;text-align:center;transition:all .2s}
+    .cat-btn.active .cat-cnt{background:var(--blue);color:#fff}
+    .cat-btn.bm.active .cat-cnt{background:var(--cyan);color:#000}
+
+    .feeds-scr{flex:1;overflow-y:auto;padding:0 12px 8px}
+    .feed-row{display:flex;align-items:center;padding:5px 6px;border-radius:6px;font-size:12px;color:var(--muted);gap:7px;margin-bottom:1px;transition:background .13s}
+    .feed-row:hover{background:var(--hover)}
+    .feed-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .feed-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .feed-rm{background:none;border:none;color:var(--faint);cursor:pointer;font-size:12px;padding:0 2px;border-radius:3px;display:none;transition:color .13s;font-family:inherit}
+    .feed-row:hover .feed-rm{display:block}
+    .feed-rm:hover{color:var(--red)}
+    .feed-st{font-size:12px;flex-shrink:0}
+    .st-ok{color:var(--green)}.st-err{color:var(--red);cursor:pointer}.st-err:hover{opacity:.7}
+    .st-load{color:var(--blue);animation:spin .8s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .sb-foot{padding:10px 12px;border-top:1px solid var(--border)}
+    .add-btn{width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:var(--r);background:none;color:var(--muted);cursor:pointer;font-size:13px;transition:all .15s;font-family:inherit}
+    .add-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,102,255,.07)}
+
+    /* ── Main ── */
+    .main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .topbar{background:var(--dark);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .tb-title{font-size:15px;font-weight:700;white-space:nowrap}
+    .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
+    .prog-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));width:0%;transition:width .35s ease}
+    .srch-wrap{flex:1;position:relative}
+    .srch-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:13px;pointer-events:none}
+    .srch{width:100%;padding:7px 12px 7px 30px;border:1px solid var(--border);border-radius:var(--r);background:var(--darker);color:var(--text);font-size:13.5px;outline:none;transition:border-color .15s;font-family:inherit}
+    .srch:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,102,255,.15)}
+    .srch::placeholder{color:var(--faint)}
+    .ref-btn{padding:7px 15px;background:linear-gradient(135deg,var(--blue),#0044cc);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;font-family:inherit;box-shadow:var(--glow)}
+    .ref-btn:hover{background:linear-gradient(135deg,#0077ff,#0055ee);transform:translateY(-1px)}
+    .ref-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+    .ref-ico{display:inline-block}
+    .spinning{animation:spin .8s linear infinite}
+    .stats-bar{padding:5px 18px;font-size:11px;color:var(--faint);background:var(--dark);border-bottom:1px solid var(--border);display:none;align-items:center;gap:12px}
+    .stats-bar.vis{display:flex}
+    .stat-ok{color:var(--green)}.stat-err{color:var(--red)}
+
+    /* ── Articles ── */
+    .arts-outer{flex:1;overflow-y:auto;padding:16px 22px}
+    .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;margin-top:2px}
+    .sec-name{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);white-space:nowrap}
+    .sec-cnt{font-size:11px;color:var(--faint)}
+    .sec-line{flex:1;height:1px;background:var(--border)}
+    .arch-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 9px;font-size:11px;color:var(--faint);cursor:pointer;white-space:nowrap;transition:all .13s;font-family:inherit}
+    .arch-btn:hover{background:var(--hover);color:var(--text)}
+    .arts-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;text-decoration:none;display:block;color:inherit;transition:box-shadow .15s,border-color .15s,transform .15s,opacity .2s;position:relative}
+    .card:hover{box-shadow:var(--shadow),var(--glow);border-color:var(--blue);transform:translateY(-1px)}
+    .card.read{opacity:.42}
+    .card.read .art-title{color:var(--muted)}
+    .bm-btn{position:absolute;top:11px;right:11px;background:none;border:none;color:var(--faint);font-size:14px;cursor:pointer;padding:3px 5px;border-radius:4px;transition:all .15s;z-index:2;line-height:1}
+    .bm-btn:hover{color:var(--cyan);background:rgba(0,255,255,.1)}
+    .bm-btn.saved{color:var(--cyan)}
+    .art-meta{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap;padding-right:30px}
+    .src-pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;padding:2px 9px;border-radius:20px}
+    .new-pill{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#000;background:var(--cyan);padding:2px 7px;border-radius:20px}
+    .art-date{margin-left:auto;font-size:11px;color:var(--faint);white-space:nowrap}
+    .art-title{font-size:14.5px;font-weight:600;line-height:1.45;margin-bottom:5px}
+    .art-desc{font-size:12.5px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+    /* States */
+    .state-box{text-align:center;padding:70px 20px;color:var(--muted)}
+    .state-icon{font-size:44px;margin-bottom:14px}
+    .state-title{font-size:17px;font-weight:700;margin-bottom:7px;color:var(--text)}
+    .state-desc{font-size:13px}
+    .skel-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
+    .skel{border-radius:4px;background:linear-gradient(90deg,var(--border) 25%,var(--hover) 50%,var(--border) 75%);background-size:200% 100%;animation:shim 1.4s infinite}
+    @keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* Modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(3px)}
+    .overlay.open{display:flex}
+    .modal{background:var(--dark);border:1px solid var(--border);border-radius:14px;padding:26px;width:460px;max-width:92vw;box-shadow:var(--shadow)}
+    .modal h3{font-size:16px;font-weight:700;margin-bottom:18px}
+    .fg{margin-bottom:14px}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+    .fi,.fs{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--darker);color:var(--text);font-size:13.5px;outline:none;transition:border-color .15s;font-family:inherit}
+    .fi:focus,.fs:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,102,255,.15)}
+    .fs{cursor:pointer;appearance:none}
+    .fhint{font-size:11.5px;color:var(--faint);margin-top:4px}
+    .m-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+    .btn{padding:8px 17px;border-radius:var(--r);font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+    .btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#0077ff}
+    .btn-g{background:var(--hover);color:var(--text);border:1px solid var(--border)}.btn-g:hover{background:var(--border)}
+
+    /* Toast */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--card);color:var(--text);border:1px solid var(--border);padding:10px 16px;border-radius:9px;font-size:13px;font-weight:500;z-index:300;animation:slideup .2s ease;box-shadow:var(--shadow)}
+    @keyframes slideup{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+    /* Light theme */
+    :root.light{--dark:#f0f2f5;--darker:#e8eaed;--card:#fff;--border:#dde1e7;--text:#111827;--muted:#4b5563;--faint:#9ca3af;--hover:#e5e7eb;--shadow:0 2px 10px rgba(0,0,0,.08);--glow:0 0 14px rgba(0,102,255,.12)}
+    :root.light .sb-head{background:linear-gradient(160deg,#dbeafe 0%,#eff6ff 100%)}
+    .tf-bar{display:flex;align-items:center;gap:5px;padding:7px 18px;border-bottom:1px solid var(--border);background:var(--dark);flex-shrink:0;flex-wrap:wrap}
+    .tf-lbl{font-size:10.5px;font-weight:700;color:var(--faint);margin-right:2px;white-space:nowrap}
+    .tf-btn{padding:3px 11px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--muted);cursor:pointer;font-size:11.5px;font-weight:600;transition:all .13s;font-family:inherit}
+    .tf-btn:hover{border-color:var(--blue);color:var(--blue)}
+    .tf-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .arts-outer.compact .art-desc{display:none}
+    .arts-outer.compact .card{padding:9px 14px}
+    .arts-outer.compact .art-title{font-size:13.5px;margin-bottom:0}
+    .arts-outer.compact .arts-list{gap:4px}
+    .ico-btn{padding:6px 10px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--muted);cursor:pointer;font-size:13px;transition:all .13s;font-family:inherit;white-space:nowrap}
+    .ico-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,102,255,.07)}
+    .kb-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center;margin-top:4px}
+    .kb-key{background:var(--hover);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11.5px;font-weight:700;font-family:monospace;color:var(--text);white-space:nowrap;text-align:center}
+    .kb-desc{font-size:12.5px;color:var(--muted)}
+    @media(max-width:640px){.sb{display:none}.tb-title{display:none}}
+    /* Multi-column layouts */
+    .arts-outer.col2 .arts-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .arts-outer.col3 .arts-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    /* Unread badge on cat buttons */
+    .unread-badge{font-size:9.5px;font-weight:800;background:var(--blue);color:#fff;border-radius:10px;padding:0 5px;min-width:16px;text-align:center;display:none}
+    .unread-badge.vis{display:inline-block}
+    /* Sort select */
+    .sort-sel{padding:3px 8px;border:1px solid var(--border);border-radius:20px;background:var(--darker);color:var(--muted);font-size:11.5px;cursor:pointer;font-family:inherit;outline:none;transition:border-color .13s}
+    .sort-sel:focus,.sort-sel:hover{border-color:var(--blue);color:var(--blue)}
+    /* Muted words */
+    .muted-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(220,38,38,.12);color:#ff6b6b;border:1px solid rgba(220,38,38,.25);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;margin:2px}
+    .muted-tag button{background:none;border:none;color:inherit;cursor:pointer;font-size:11px;padding:0;line-height:1;opacity:.7}
+    .muted-tag button:hover{opacity:1}
+    .muted-inp{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--darker);color:var(--text);font-size:11.5px;outline:none;font-family:inherit;margin-bottom:4px}
+    .muted-inp:focus{border-color:var(--red)}
+    .muted-wrap{padding:8px 12px 6px;flex-shrink:0}
+    /* Font size */
+    .fs-grp{display:flex;align-items:center;gap:3px}
+    .fs-btn{padding:3px 7px;border:1px solid var(--border);border-radius:5px;background:none;color:var(--muted);cursor:pointer;font-weight:700;font-family:inherit;font-size:12px;transition:all .13s;line-height:1}
+    .fs-btn:hover{border-color:var(--blue);color:var(--blue)}
+    /* Mark all read */
+    .mark-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 9px;font-size:11px;color:var(--faint);cursor:pointer;white-space:nowrap;transition:all .13s;font-family:inherit}
+    .mark-btn:hover{background:var(--hover);color:var(--text)}
+    /* Dedup multi-source badge */
+    .multi-src{font-size:9px;font-weight:800;background:rgba(0,102,255,.15);color:var(--blue);border:1px solid rgba(0,102,255,.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle}
+    /* OPML buttons */
+    .opml-row{display:flex;gap:4px;margin-top:4px}
+    .opml-btn{flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--muted);cursor:pointer;font-size:11px;transition:all .15s;font-family:inherit;text-align:center}
+    .opml-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,102,255,.07)}
+    /* Reading history */
+    .hist-empty{font-size:12px;color:var(--faint);text-align:center;padding:20px 8px}
+    /* Notif request bar */
+    .notif-bar{display:none;align-items:center;gap:10px;padding:6px 18px;background:rgba(220,38,38,.1);border-bottom:1px solid rgba(220,38,38,.25);font-size:12px;color:#ff6b6b;flex-shrink:0}
+    .notif-bar.vis{display:flex}
+    .notif-btn{padding:3px 10px;border:1px solid rgba(220,38,38,.4);border-radius:20px;background:none;color:#ff6b6b;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
+    .notif-btn:hover{background:rgba(220,38,38,.15)}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sb-head">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="logo"><span class="logo-icon">⚡</span>NewsHub</div>
+        <button class="ico-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
+      </div>
+      <div class="mode-badge mode-cloud"><span class="mode-dot"></span>🌐 Cloud</div>
+      <div class="upd-txt" id="updTxt">Never refreshed</div>
+      <div class="next-ref" id="nextRef"></div>
+    </div>
+
+    <div class="sb-sec">
+      <span class="sb-lbl">View</span>
+      <button class="cat-btn active" data-cat="all"       onclick="setCat('all')">      🌐 All Sources  <span class="unread-badge" id="unrd-all"></span><span class="cat-cnt" id="cnt-all">—</span></button>
+      <button class="cat-btn bm"     data-cat="bookmarks" onclick="setCat('bookmarks')">🔖 Bookmarks    <span class="cat-cnt" id="cnt-bm">0</span></button>
+      <button class="cat-btn"        data-cat="history"   onclick="setCat('history')">  🕑 History      <span class="cat-cnt" id="cnt-hist">0</span></button>
+    </div>
+    <div class="sb-sec">
+      <span class="sb-lbl">Categories</span>
+      <button class="cat-btn" data-cat="ai"      onclick="setCat('ai')">      🤖 AI & ML     <span class="unread-badge" id="unrd-ai"></span><span class="cat-cnt" id="cnt-ai">—</span></button>
+      <button class="cat-btn" data-cat="tech"    onclick="setCat('tech')">    💻 Tech        <span class="unread-badge" id="unrd-tech"></span><span class="cat-cnt" id="cnt-tech">—</span></button>
+      <button class="cat-btn" data-cat="finance" onclick="setCat('finance')"> 📈 Finance     <span class="unread-badge" id="unrd-finance"></span><span class="cat-cnt" id="cnt-finance">—</span></button>
+      <button class="cat-btn" data-cat="general" onclick="setCat('general')"> 📚 General     <span class="unread-badge" id="unrd-general"></span><span class="cat-cnt" id="cnt-general">—</span></button>
+      <button class="cat-btn" data-cat="breaking" onclick="setCat('breaking')">🔴 Breaking   <span class="unread-badge" id="unrd-breaking"></span><span class="cat-cnt" id="cnt-breaking">—</span></button>
+    </div>
+    <div class="sb-sec"><span class="sb-lbl">Sources</span></div>
+    <div class="feeds-scr" id="feedList"></div>
+    <div class="muted-wrap" id="mutedWrap">
+      <span class="sb-lbl">🔇 Muted Keywords</span>
+      <input class="muted-inp" id="mutedInput" type="text" placeholder="Type word + Enter to mute…" onkeydown="addMuted(event)">
+      <div id="mutedList"></div>
+    </div>
+    <div class="sb-foot">
+      <button class="add-btn" onclick="openModal()">＋ Add Custom Feed</button>
+      <div class="opml-row">
+        <button class="opml-btn" onclick="triggerOPMLImport()" title="Import feeds from an OPML file">📥 Import OPML</button>
+        <button class="opml-btn" onclick="exportOPML()" title="Export custom feeds as OPML">📤 Export OPML</button>
+      </div>
+      <input type="file" id="opmlInput" accept=".opml,.xml" style="display:none" onchange="handleOPML(event)">
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tbTitle">All Sources</div>
+      <div class="srch-wrap">
+        <span class="srch-ico">🔍</span>
+        <input class="srch" id="srchInput" type="text" placeholder="Search articles… (or press R to refresh, B for bookmarks)" oninput="onSearch(this.value)">
+      </div>
+      <div class="fs-grp">
+        <button class="fs-btn" onclick="adjustFont(-0.1)" title="Decrease font size">A−</button>
+        <button class="fs-btn" onclick="adjustFont(0.1)"  title="Increase font size">A+</button>
+      </div>
+      <button class="ico-btn" id="colBtn"     onclick="cycleLayout()"   title="Toggle column layout">⊟</button>
+      <button class="ico-btn" id="densityBtn" onclick="toggleDensity()" title="Toggle compact view">⊞</button>
+      <button class="ico-btn" onclick="openHelp()" title="Keyboard shortcuts (?)">⌨</button>
+      <button class="ref-btn" id="refBtn" onclick="refreshAll()">
+        <span class="ref-ico" id="refIco">↻</span> Refresh
+      </button>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+    <div class="stats-bar" id="statsBar">
+      <span id="statTxt">Loading…</span>
+      <span id="statOk"  style="display:none" class="stat-ok"></span>
+      <span id="statErr" style="display:none" class="stat-err"></span>
+    </div>
+    <div class="notif-bar" id="notifBar">
+      🔴 Enable notifications to get alerts for breaking news
+      <button class="notif-btn" onclick="requestNotifPermission()">Enable</button>
+      <button class="notif-btn" onclick="dismissNotifBar()">Dismiss</button>
+    </div>
+    <div class="tf-bar">
+      <span class="tf-lbl">Time:</span>
+      <button class="tf-btn active" data-tf="all" onclick="setTimeFilter('all')">All</button>
+      <button class="tf-btn" data-tf="1" onclick="setTimeFilter('1')">1h</button>
+      <button class="tf-btn" data-tf="6" onclick="setTimeFilter('6')">6h</button>
+      <button class="tf-btn" data-tf="24" onclick="setTimeFilter('24')">24h</button>
+      <button class="tf-btn" data-tf="168" onclick="setTimeFilter('168')">7 days</button>
+      <span class="tf-lbl" style="margin-left:8px">Sort:</span>
+      <select class="sort-sel" id="sortSel" onchange="setSortOrder(this.value)">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="source">By source</option>
+        <option value="unread">Unread first</option>
+      </select>
+    </div>
+    <div class="arts-outer" id="artsOuter">
+      <div class="state-box">
+        <div class="state-icon">⚡</div>
+        <div class="state-title">Starting NewsHub…</div>
+        <div class="state-desc">Fetching your feeds from the cloud</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="ovClick(event)">
+  <div class="modal">
+    <h3 id="modalTitle">Add Custom Feed</h3>
+    <div class="fg"><label class="fl">Feed Name</label>
+      <input class="fi" id="fName" type="text" placeholder="e.g. One Useful Thing"></div>
+    <div class="fg"><label class="fl">RSS / Atom URL</label>
+      <input class="fi" id="fUrl" type="url" placeholder="https://www.oneusefulthing.org/feed"
+             onkeydown="if(event.key==='Enter')saveFeed()">
+      <div class="fhint">Most blogs publish a feed at /feed, /rss, or /feed.xml</div></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fs" id="fCat">
+        <option value="ai">🤖 AI & ML</option>
+        <option value="tech">💻 Tech</option>
+        <option value="finance">📈 Finance</option>
+        <option value="general">📚 General</option>
+        <option value="breaking">🔴 Breaking</option>
+      </select></div>
+    <div class="m-actions">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveFeed()">Add Feed</button>
+    </div>
+  </div>
+</div>
+
+<!-- KEYBOARD HELP MODAL -->
+<div class="overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="modal">
+    <h3>⌨ Keyboard Shortcuts</h3>
+    <div class="kb-grid">
+      <span class="kb-key">R</span><span class="kb-desc">Refresh all feeds</span>
+      <span class="kb-key">B</span><span class="kb-desc">Toggle Bookmarks</span>
+      <span class="kb-key">/</span><span class="kb-desc">Focus search bar</span>
+      <span class="kb-key">Esc</span><span class="kb-desc">Clear search / close modal</span>
+      <span class="kb-key">1–5</span><span class="kb-desc">Switch category (All, AI, Tech, Finance, General)</span>
+      <span class="kb-key">D</span><span class="kb-desc">Toggle compact/full card density</span>
+      <span class="kb-key">T</span><span class="kb-desc">Toggle light/dark theme</span>
+      <span class="kb-key">?</span><span class="kb-desc">Show this help</span>
+      <span class="kb-key">M</span><span class="kb-desc">Toggle muted keywords panel</span>
+      <span class="kb-key">N</span><span class="kb-desc">Enable breaking news notifications</span>
+      <span class="kb-key">U</span><span class="kb-desc">Mark all visible articles as read</span>
+      <span class="kb-key">E</span><span class="kb-desc">Export feeds as OPML</span>
+    </div>
+    <div class="m-actions" style="margin-top:22px">
+      <button class="btn btn-p" onclick="closeHelp()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────
+const REFRESH_HRS  = [9,12,15,18,21];
+const ARCHIVE_DAYS = 7;
+const CAT_COLORS   = {ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706',breaking:'#dc2626'};
+const CAT_LABELS   = {all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',breaking:'Breaking News',bookmarks:'Bookmarks'};
+
+// Proxy strategies — used ONLY for user-added custom feeds (default feeds are
+// fetched server-side with no CORS restrictions)
+const PROXY_STRATEGIES = [
+  url => fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=35`,{signal:AbortSignal.timeout(11000)}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{if(d.status!=='ok')throw 0;return d.items.map(i=>({title:cl(i.title),link:i.link||i.guid,date:sd(i.pubDate),desc:cl(i.description||i.content||'').slice(0,260)})).filter(a=>a.link&&a.title)}),
+  url => fx(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`).then(r=>r.text()).then(parseXml),
+  url => fx(`https://corsproxy.io/?${encodeURIComponent(url)}`).then(r=>r.text()).then(parseXml),
+  url => fx(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r=>r.text()).then(parseXml),
+];
+
+// Default feeds list — matches the server's DEFAULT_FEEDS exactly
+// (used for sidebar display; actual article fetching happens server-side)
+const DEFAULT_FEEDS = [
+  // AI
+  {id:'one-useful-thing',name:'One Useful Thing',    url:'https://www.oneusefulthing.org/feed',                                                              cat:'ai'},
+  {id:'simon-willison',  name:'Simon Willison',      url:'https://simonwillison.net/atom/everything/',                                                       cat:'ai'},
+  {id:'hf',              name:'Hugging Face',        url:'https://huggingface.co/blog/feed.xml',                                                             cat:'ai'},
+  {id:'the-batch',       name:'The Batch (DL.AI)',   url:'https://www.deeplearning.ai/the-batch/feed/',                                                      cat:'ai'},
+  {id:'ai-news',         name:'AI News',             url:'https://www.artificialintelligence-news.com/feed/',                                                cat:'ai'},
+  {id:'mit-ai',          name:'MIT AI News',         url:'https://news.mit.edu/rss/topic/artificial-intelligence2',                                          cat:'ai'},
+  {id:'openai',          name:'OpenAI Blog',         url:'https://openai.com/news/rss.xml',                                                                  cat:'ai'},
+  {id:'deepmind',        name:'Google DeepMind',     url:'https://deepmind.google/blog/rss.xml',                                                             cat:'ai'},
+  {id:'import-ai',       name:'Import AI',           url:'https://jack-clark.net/feed/',                                                                     cat:'ai'},
+  {id:'google-ai',       name:'Google AI Blog',      url:'https://blog.google/technology/ai/rss/',                                                           cat:'ai'},
+  {id:'nvidia-dev',      name:'Nvidia AI Blog',      url:'https://developer.nvidia.com/blog/feed/',                                                          cat:'ai'},
+  {id:'arxiv-ai',        name:'ArXiv CS.AI',         url:'https://rss.arxiv.org/rss/cs.AI',                                                                  cat:'ai'},
+  {id:'lesswrong',       name:'LessWrong',           url:'https://www.lesswrong.com/feed.xml',                                                               cat:'ai'},
+  {id:'the-gradient',    name:'The Gradient',        url:'https://thegradient.pub/rss/',                                                                     cat:'ai'},
+  {id:'towards-ds',      name:'Towards Data Science',url:'https://towardsdatascience.com/feed',                                                              cat:'ai'},
+  {id:'towards-ai',      name:'Towards AI',          url:'https://pub.towardsai.net/feed',                                                                   cat:'ai'},
+  {id:'rundown-ai',      name:'The Rundown AI',      url:'https://therundown.substack.com/feed',                                                             cat:'ai'},
+  {id:'bens-bites',      name:"Ben's Bites",         url:'https://www.bensbites.com/feed',                                                                   cat:'ai'},
+  {id:'tldr-ai',         name:'TLDR AI',             url:'https://tldr.tech/api/rss/ai',                                                                     cat:'ai'},
+  {id:'anthropic',       name:'Anthropic',           url:'https://news.google.com/rss/search?q=site:anthropic.com&hl=en-US&gl=US&ceid=US:en',               cat:'ai'},
+  {id:'meta-ai',         name:'Meta AI',             url:'https://news.google.com/rss/search?q=site:ai.meta.com&hl=en-US&gl=US&ceid=US:en',                 cat:'ai'},
+  {id:'mistral',         name:'Mistral AI',          url:'https://news.google.com/rss/search?q=site:mistral.ai&hl=en-US&gl=US&ceid=US:en',                  cat:'ai'},
+  {id:'a16z-ai',         name:'a16z AI',             url:'https://news.google.com/rss/search?q=site:a16z.com+AI&hl=en-US&gl=US&ceid=US:en',                 cat:'ai'},
+  {id:'perplexity',      name:'Perplexity AI',       url:'https://news.google.com/rss/search?q=site:perplexity.ai&hl=en-US&gl=US&ceid=US:en',               cat:'ai'},
+  {id:'superhuman-ai',   name:'Superhuman AI',       url:'https://news.google.com/rss/search?q=superhuman+AI+newsletter&hl=en-US&gl=US&ceid=US:en',         cat:'ai'},
+  {id:'venturebeat-ai',  name:'VentureBeat AI',      url:'https://news.google.com/rss/search?q=site:venturebeat.com+AI&hl=en-US&gl=US&ceid=US:en',          cat:'ai'},
+  // Tech
+  {id:'hn',              name:'Hacker News',         url:'https://hnrss.org/frontpage',                                                                      cat:'tech'},
+  {id:'tc',              name:'TechCrunch',          url:'https://techcrunch.com/feed/',                                                                      cat:'tech'},
+  {id:'verge',           name:'The Verge',           url:'https://www.theverge.com/rss/index.xml',                                                           cat:'tech'},
+  {id:'ars',             name:'Ars Technica',        url:'https://feeds.arstechnica.com/arstechnica/index',                                                   cat:'tech'},
+  {id:'engadget',        name:'Engadget',            url:'https://www.engadget.com/rss.xml',                                                                  cat:'tech'},
+  {id:'zdnet',           name:'ZDNet',               url:'https://www.zdnet.com/news/rss.xml',                                                                cat:'tech'},
+  {id:'tldr-tech',       name:'TLDR Tech',           url:'https://tldr.tech/rss',                                                                             cat:'tech'},
+  {id:'wired',           name:'Wired',               url:'https://www.wired.com/feed/rss',                                                                    cat:'tech'},
+  {id:'ieee',            name:'IEEE Spectrum',       url:'https://spectrum.ieee.org/feeds/feed.rss',                                                          cat:'tech'},
+  {id:'9to5mac',         name:'9to5Mac',             url:'https://9to5mac.com/feed/',                                                                         cat:'tech'},
+  {id:'fast-company',    name:'Fast Company',        url:'https://www.fastcompany.com/latest/rss',                                                            cat:'tech'},
+  {id:'the-information', name:'The Information',     url:'https://www.theinformation.com/feed',                                                               cat:'tech'},
+  {id:'wsj-tech',        name:'WSJ Tech',            url:'https://feeds.a.dj.com/rss/RSSWSJD.xml',                                                           cat:'tech'},
+  // Finance
+  {id:'cnbc',            name:'CNBC Markets',        url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',                                             cat:'finance'},
+  {id:'mwatch',          name:'MarketWatch',         url:'https://feeds.marketwatch.com/marketwatch/topstories/',                                             cat:'finance'},
+  {id:'coindesk',        name:'CoinDesk',            url:'https://www.coindesk.com/arc/outboundfeeds/rss/',                                                   cat:'finance'},
+  {id:'yahoo-finance',   name:'Yahoo Finance',       url:'https://finance.yahoo.com/news/rssindex',                                                           cat:'finance'},
+  {id:'fool',            name:'Motley Fool',         url:'https://www.fool.com/feeds/index.aspx',                                                             cat:'finance'},
+  {id:'bloomberg-tech',  name:'Bloomberg Tech',      url:'https://feeds.bloomberg.com/technology/news.rss',                                                   cat:'finance'},
+  {id:'bloomberg-mkts',  name:'Bloomberg Markets',   url:'https://feeds.bloomberg.com/markets/news.rss',                                                      cat:'finance'},
+  {id:'wsj-markets',     name:'WSJ Markets',         url:'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',                                                    cat:'finance'},
+  {id:'ft',              name:'Financial Times',     url:'https://www.ft.com/rss/home/uk',                                                                    cat:'finance'},
+  {id:'seeking-alpha',   name:'Seeking Alpha',       url:'https://seekingalpha.com/feed.xml',                                                                 cat:'finance'},
+  {id:'economist',       name:'The Economist',       url:'https://www.economist.com/finance-and-economics/rss.xml',                                           cat:'finance'},
+  {id:'investopedia',    name:'Investopedia',        url:'https://news.google.com/rss/search?q=site:investopedia.com&hl=en-US&gl=US&ceid=US:en',             cat:'finance'},
+  {id:'barrons',         name:"Barron's",            url:'https://news.google.com/rss/search?q=site:barrons.com&hl=en-US&gl=US&ceid=US:en',                  cat:'finance'},
+  // General
+  {id:'bbc',             name:'BBC News',            url:'https://feeds.bbci.co.uk/news/rss.xml',                                                             cat:'general'},
+  {id:'guardian',        name:'The Guardian Tech',   url:'https://www.theguardian.com/technology/rss',                                                        cat:'general'},
+  {id:'mit-rev',         name:'MIT Tech Review',     url:'https://www.technologyreview.com/feed/',                                                            cat:'general'},
+  {id:'nyt-tech',        name:'NYT Technology',      url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',                                       cat:'general'},
+  {id:'new-scientist',   name:'New Scientist',       url:'https://www.newscientist.com/feed/home/',                                                            cat:'general'},
+  // Breaking
+  {id:'npr',             name:'NPR News',            url:'https://feeds.npr.org/1001/rss.xml',                                                                cat:'breaking'},
+  {id:'al-jazeera',      name:'Al Jazeera',          url:'https://www.aljazeera.com/xml/rss/all.xml',                                                         cat:'breaking'},
+  {id:'guardian-world',  name:'Guardian World',      url:'https://www.theguardian.com/world/rss',                                                             cat:'breaking'},
+  {id:'reuters',         name:'Reuters',             url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',                  cat:'breaking'},
+  {id:'sky-news',        name:'Sky News',            url:'https://feeds.skynews.com/feeds/rss/world.xml',                                                     cat:'breaking'},
+];
+
+// ── State ───────────────────────────────────────────────────
+let allArts=[], activeCat='all', activeFeed=null, searchQ='', loading=false, showArch=false;
+let timeFilter='all', compactMode=false, darkMode=true;
+let sortOrder=localStorage.getItem('nh_sort')||'newest';
+let colLayout=parseInt(localStorage.getItem('nh_col')||'1');
+let fontSize=parseFloat(localStorage.getItem('nh_fs')||'1');
+let mutedWords=new Set(JSON.parse(localStorage.getItem('nh_muted')||'[]'));
+let histArts=JSON.parse(localStorage.getItem('nh_hist_arts')||'[]');
+let editingFeedId=null;
+let lastBreakingIds=new Set();
+let notifDismissed=!!localStorage.getItem('nh_notif_dismissed');
+let statuses={}, feeds=[];
+
+const readSet   = new Set(JSON.parse(localStorage.getItem('nh_read')||'[]'));
+const bmSet     = new Set(JSON.parse(localStorage.getItem('nh_bm')||'[]'));
+let   bmArts    = JSON.parse(localStorage.getItem('nh_bm_arts')||'[]');
+let   customFeeds = JSON.parse(localStorage.getItem('nh_custom')||'[]');
+
+// ── Helpers ─────────────────────────────────────────────────
+function cl(s){if(!s)return'';return(s+'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim()}
+function sd(s){if(!s)return null;const d=new Date(s);return isNaN(d)?null:d}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+async function fx(url,ms=13000){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+  try{const r=await fetch(url,{signal:c.signal});clearTimeout(t);if(!r.ok)throw new Error('HTTP '+r.status);return r}
+  catch(e){clearTimeout(t);throw e}
+}
+
+function parseXml(text){
+  const doc=new DOMParser().parseFromString(text,'text/xml');
+  if(doc.querySelector('parsererror'))throw new Error('bad xml');
+  const isA=!!doc.querySelector('feed > entry');
+  const items=doc.querySelectorAll(isA?'feed > entry':'channel > item');
+  return Array.from(items).slice(0,40).map(el=>{
+    const title=cl(el.querySelector('title')?.textContent);
+    let link='';
+    if(isA){const lel=el.querySelector('link[rel="alternate"],link:not([rel])');link=lel?.getAttribute('href')||lel?.textContent?.trim()||''}
+    else{link=el.querySelector('link')?.textContent?.trim()||el.querySelector('guid')?.textContent?.trim()||''}
+    const ds=el.querySelector('pubDate,published,updated,dc\\:date')?.textContent;
+    const desc=cl(el.querySelector('description,summary,content\\:encoded,content')?.textContent||'').slice(0,260);
+    return link?{title,link,date:sd(ds),desc}:null;
+  }).filter(Boolean);
+}
+
+// ── Custom feed proxy fetcher ────────────────────────────────
+async function fetchOneProxy(feed){
+  statuses[feed.id]='load';renderFeedList();
+  for(const s of PROXY_STRATEGIES){
+    try{
+      const raw=await s(feed.url);
+      statuses[feed.id]='ok';renderFeedList();return raw;
+    }catch(e){}
+  }
+  statuses[feed.id]='err';renderFeedList();return[];
+}
+
+// ── Cloud refresh ────────────────────────────────────────────
+async function refreshAll(){
+  if(loading)return;
+  loading=true;
+  const btn=document.getElementById('refBtn'),ico=document.getElementById('refIco');
+  btn.disabled=true;ico.classList.add('spinning');
+  document.getElementById('statsBar').classList.add('vis');
+  renderSkeletons();
+  showStats('Fetching from cloud…',0,0,false);
+
+  // Show all default feeds as loading
+  DEFAULT_FEEDS.forEach(f=>statuses[f.id]='load');
+  renderFeedList();
+
+  try{
+    // Fetch default feeds from the server-side API (no CORS, no proxies needed)
+    const resp=await fetch('/api/articles',{signal:AbortSignal.timeout(30000)});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const serverArts=await resp.json();
+
+    // Assign a stable client-side ID to each article
+    allArts=serverArts.map(a=>({...a,id:a.feedId+'::'+a.link}));
+
+    // Mark all default feeds as ok
+    DEFAULT_FEEDS.forEach(f=>statuses[f.id]='ok');
+
+    // Also fetch any user-added custom feeds (client-side, using proxies)
+    if(customFeeds.length>0){
+      showStats('Loading custom feeds…',allArts.length,0,false);
+      document.getElementById('progBar').style.width='80%';
+      await Promise.allSettled(customFeeds.map(feed=>
+        fetchOneProxy(feed).then(arts=>{
+          const newArts=arts.map(a=>({
+            ...a,
+            id:     feed.id+'::'+a.link,
+            source: feed.name,
+            cat:    feed.cat,
+            feedId: feed.id,
+          }));
+          const seen=new Set(allArts.map(a=>a.id));
+          allArts=[...allArts,...newArts.filter(a=>!seen.has(a.id))];
+        }).catch(()=>{})
+      ));
+      allArts.sort((a,b)=>toTS(b.date)-toTS(a.date));
+    }
+
+    allArts=dedupeArts(allArts);
+    checkBreakingNotifs(allArts);
+    showStats(`${feeds.length} sources`,allArts.length,0,true);
+    updateCounts();renderArticles();
+    toast(`✓ ${allArts.length} articles loaded`);
+
+  }catch(e){
+    DEFAULT_FEEDS.forEach(f=>statuses[f.id]='err');
+    showStats('Could not reach server',0,1,true);
+    document.getElementById('artsOuter').innerHTML=`<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Could not load articles</div><div class="state-desc">Check your connection and try refreshing</div></div>`;
+    toast('Load failed — check connection');
+  }
+
+  loading=false;btn.disabled=false;ico.classList.remove('spinning');
+  document.getElementById('progBar').style.width='100%';
+  setTimeout(()=>document.getElementById('progBar').style.width='0%',900);
+  document.getElementById('updTxt').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  renderFeedList();
+}
+
+function showStats(txt,ok,err,done){
+  document.getElementById('statTxt').textContent=txt;
+  const oe=document.getElementById('statOk'),ee=document.getElementById('statErr');
+  oe.style.display=ok?'':'none';oe.textContent=`· ✓ ${ok} articles`;
+  ee.style.display=err?'':'none';ee.textContent=`· ✕ ${err} failed`;
+}
+
+async function retryFeed(){refreshAll()}  // cloud: retry = full refresh
+
+// ── Auto-refresh timer ───────────────────────────────────────
+function checkAutoRefresh(){
+  const now=new Date(),h=now.getHours(),m=now.getMinutes();
+  if(REFRESH_HRS.includes(h)&&m===0){
+    const key=`nh_ar_${h}_${now.toDateString()}`;
+    if(!localStorage.getItem(key)){localStorage.setItem(key,'1');refreshAll()}
+  }
+  updateNextLabel();
+}
+function updateNextLabel(){
+  const now=new Date(),h=now.getHours(),m=now.getMinutes();
+  const next=REFRESH_HRS.find(rh=>rh>h||(rh===h&&m<1));
+  const el=document.getElementById('nextRef');
+  if(next!==undefined){const lbl=next===12?'12:00 PM':next>12?`${next-12}:00 PM`:`${next}:00 AM`;el.innerHTML=`Next refresh at <span>${lbl}</span>`}
+  else{el.innerHTML=`Next refresh <span>tomorrow 9:00 AM</span>`}
+}
+setInterval(checkAutoRefresh,60000);updateNextLabel();
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('helpOverlay').classList.contains('open')){closeHelp();return}
+    if(document.getElementById('overlay').classList.contains('open')){closeModal();return}
+    const s=document.getElementById('srchInput');if(s.value){s.value='';onSearch('');s.blur();return}
+  }
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'){if(e.key==='Escape')e.target.blur();return}
+  if(e.key==='r'||e.key==='R'){refreshAll();return}
+  if(e.key==='b'||e.key==='B'){setCat(activeCat==='bookmarks'?'all':'bookmarks');return}
+  if(e.key==='/'){e.preventDefault();document.getElementById('srchInput').focus();return}
+  if(e.key==='d'||e.key==='D'){toggleDensity();return}
+  if(e.key==='t'||e.key==='T'){toggleTheme();return}
+  if(e.key==='?'){openHelp();return}
+  if(e.key==='m'||e.key==='M'){toggleMutedPanel();return}
+  if(e.key==='n'||e.key==='N'){requestNotifPermission();return}
+  if(e.key==='u'||e.key==='U'){markAllRead();return}
+  if(e.key==='e'||e.key==='E'){exportOPML();return}
+  const cats=['all','ai','tech','finance','general'];
+  if(e.key>='1'&&e.key<='5'){setCat(cats[parseInt(e.key)-1]);return}
+});
+
+// ── Bookmarks ────────────────────────────────────────────────
+function toggleBm(id,el,ev){
+  ev.preventDefault();ev.stopPropagation();
+  const art=allArts.find(a=>a.id===id)||bmArts.find(a=>a.id===id);
+  if(bmSet.has(id)){bmSet.delete(id);bmArts=bmArts.filter(a=>a.id!==id);el.classList.remove('saved');toast('Bookmark removed')}
+  else{bmSet.add(id);if(art&&!bmArts.find(a=>a.id===id))bmArts.push(art);el.classList.add('saved');toast('Bookmarked!')}
+  localStorage.setItem('nh_bm',JSON.stringify([...bmSet]));
+  localStorage.setItem('nh_bm_arts',JSON.stringify(bmArts));
+  updateCounts();
+}
+
+// ── Category / search ────────────────────────────────────────
+function setCat(cat){
+  activeCat=cat;activeFeed=null;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+  document.getElementById('tbTitle').textContent=CAT_LABELS[cat]||cat;
+  if(cat==='breaking'&&!notifDismissed&&Notification&&Notification.permission==='default'){
+    document.getElementById('notifBar').classList.add('vis');
+  }
+  updateURL();renderFeedList();renderArticles();
+}
+function setFeed(id){
+  if(activeFeed===id){activeFeed=null;updateURL();renderFeedList();renderArticles();return;}
+  activeFeed=id;
+  const f=feeds.find(x=>x.id===id);
+  document.getElementById('tbTitle').textContent=f?f.name:'Feed';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  updateURL();renderFeedList();renderArticles();
+}
+function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles()}
+
+function visible(){
+  if(activeCat==='bookmarks'){let a=bmArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ));return a}
+  if(activeCat==='history'){let a=histArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ));return a}
+  let a=allArts;
+  if(activeFeed)a=a.filter(x=>x.feedId===activeFeed);
+  else if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
+  if(timeFilter!=='all'){const cutoff=Date.now()-parseInt(timeFilter)*3600000;a=a.filter(x=>toTS(x.date)>=cutoff)}
+  if(mutedWords.size)a=a.filter(x=>![...mutedWords].some(w=>(x.title+' '+(x.desc||'')).toLowerCase().includes(w)));
+  if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));
+  if(sortOrder==='oldest')a=[...a].sort((x,y)=>toTS(x.date)-toTS(y.date));
+  else if(sortOrder==='source')a=[...a].sort((x,y)=>(x.source||'').localeCompare(y.source||''));
+  else if(sortOrder==='unread')a=[...a].sort((x,y)=>readSet.has(x.id)-readSet.has(y.id));
+  return a;
+}
+
+// ── Rendering ────────────────────────────────────────────────
+function updateCounts(){
+  const c={all:0,ai:0,tech:0,finance:0,general:0,breaking:0};
+  const u={all:0,ai:0,tech:0,finance:0,general:0,breaking:0};
+  allArts.forEach(a=>{
+    c.all++;if(c[a.cat]!==undefined)c[a.cat]++;
+    if(!readSet.has(a.id)){u.all++;if(u[a.cat]!==undefined)u[a.cat]++}
+  });
+  Object.entries(c).forEach(([k,v])=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=v});
+  Object.entries(u).forEach(([k,v])=>{
+    const el=document.getElementById('unrd-'+k);
+    if(el){el.textContent=v;el.classList.toggle('vis',v>0)}
+  });
+  const bel=document.getElementById('cnt-bm');if(bel)bel.textContent=bmSet.size;
+  const hel=document.getElementById('cnt-hist');if(hel)hel.textContent=histArts.length;
+}
+
+function toTS(d){if(!d)return 0;const ts=typeof d==='string'?new Date(d):d;return isNaN(ts)?0:ts.getTime()}
+
+function fmtDate(d){
+  const ts=typeof d==='string'?new Date(d):d;
+  if(!ts||isNaN(ts))return'';
+  const diff=Date.now()-ts.getTime(),h=Math.floor(diff/3600000),dy=Math.floor(diff/86400000);
+  if(h<1)return'Just now';if(h<24)return h+'h ago';if(dy<7)return dy+'d ago';
+  return ts.toLocaleDateString('en-US',{month:'short',day:'numeric',year:ts.getFullYear()!==new Date().getFullYear()?'numeric':undefined});
+}
+
+function isNew(d){return toTS(d)>0&&Date.now()-toTS(d)<86400000}
+function isRecent(d){return toTS(d)>0&&Date.now()-toTS(d)<ARCHIVE_DAYS*86400000}
+
+function cardHtml(a){
+  const isBm=bmSet.has(a.id),isRead=readSet.has(a.id),color=CAT_COLORS[a.cat]||'#555';
+  return `<a class="card${isRead?' read':''}" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer" data-id="${esc(a.id)}" onclick="onCardClick(this)">
+    <button class="bm-btn${isBm?' saved':''}" onclick="toggleBm('${esc(a.id)}',this,event)" title="${isBm?'Remove bookmark':'Bookmark'}">🔖</button>
+    <div class="art-meta">
+      <span class="src-pill" style="background:${color}">${esc(a.source)}</span>
+      ${a._alts&&a._alts.length?`<span class="multi-src">+${a._alts.length} source${a._alts.length>1?'s':''}</span>`:''}
+      ${isNew(a.date)?'<span class="new-pill">New</span>':''}
+      <span class="art-date">${fmtDate(a.date)}</span>
+    </div>
+    <div class="art-title">${esc(a.title)}</div>
+    ${a.desc?`<div class="art-desc">${esc(a.desc)}</div>`:''}
+  </a>`;
+}
+
+function onCardClick(el){
+  const id=el.getAttribute('data-id');
+  if(id){
+    readSet.add(id);localStorage.setItem('nh_read',JSON.stringify([...readSet].slice(-5000)));el.classList.add('read');
+    const art=allArts.find(a=>a.id===id);
+    if(art){
+      histArts=histArts.filter(a=>a.id!==id);
+      histArts.unshift({id:art.id,title:art.title,link:art.link,source:art.source,cat:art.cat,date:art.date});
+      if(histArts.length>300)histArts=histArts.slice(0,300);
+      localStorage.setItem('nh_hist_arts',JSON.stringify(histArts));
+      updateCounts();
+    }
+  }
+}
+
+function renderArticles(){
+  const outer=document.getElementById('artsOuter'),arts=visible();
+  if(!arts.length&&!loading){
+    const isBm=activeCat==='bookmarks';
+    outer.innerHTML=`<div class="state-box"><div class="state-icon">${searchQ?'🔍':isBm?'🔖':'📭'}</div><div class="state-title">${searchQ?'No results':isBm?'No bookmarks yet':'No articles yet'}</div><div class="state-desc">${searchQ?'Try a different search':isBm?'Click 🔖 on any article to save it':'Click Refresh to load your feeds'}</div></div>`;
+    return;
+  }
+  if(activeCat==='history'){
+    outer.innerHTML=arts.length?`<div class="sec-hdr"><span class="sec-name">Reading History</span><span class="sec-cnt">${arts.length} articles</span><div class="sec-line"></div><button class="mark-btn" onclick="clearHistory()">✕ Clear history</button></div><div class="arts-list">${arts.map(cardHtml).join('')}</div>`:`<div class="state-box"><div class="state-icon">🕑</div><div class="state-title">No history yet</div><div class="state-desc">Articles you open will appear here</div></div>`;
+    return;
+  }
+  const recent=arts.filter(a=>isRecent(a.date)),arch=arts.filter(a=>!isRecent(a.date));
+  let html='';
+  if(recent.length)html+=`<div class="sec-hdr"><span class="sec-name">Recent</span><span class="sec-cnt">${recent.length} article${recent.length!==1?'s':''}</span><div class="sec-line"></div><button class="mark-btn" onclick="markAllRead()">✓ Mark all read</button></div><div class="arts-list">${recent.map(cardHtml).join('')}</div>`;
+  if(arch.length)html+=`<div class="sec-hdr"><span class="sec-name">Archive</span><span class="sec-cnt">${arch.length} article${arch.length!==1?'s':''}</span><div class="sec-line"></div><button class="arch-btn" id="archBtn" onclick="toggleArch()">${showArch?'▲ Hide':'▼ Show'}</button></div><div id="archGrid" style="${showArch?'':'display:none'}"><div class="arts-list">${arch.map(cardHtml).join('')}</div></div>`;
+  if(!html)html=`<div class="state-box"><div class="state-icon">⏳</div><div class="state-title">Loading…</div><div class="state-desc">Articles arriving from cloud</div></div>`;
+  outer.innerHTML=html;
+}
+
+function toggleArch(){showArch=!showArch;const g=document.getElementById('archGrid'),b=document.getElementById('archBtn');if(g)g.style.display=showArch?'':'none';if(b)b.textContent=showArch?'▲ Hide':'▼ Show'}
+
+function renderSkeletons(){
+  document.getElementById('artsOuter').innerHTML=`<div class="sec-hdr"><span class="sec-name">Loading…</span><div class="sec-line"></div></div>${Array(7).fill(0).map(()=>`<div class="skel-card"><div class="skel" style="width:85px;height:14px;margin-bottom:9px"></div><div class="skel" style="width:88%;height:17px;margin-bottom:7px"></div><div class="skel" style="width:62%;height:12px"></div></div>`).join('')}`;
+}
+
+function renderFeedList(){
+  const toShow=activeCat==='all'||activeCat==='bookmarks'?feeds:feeds.filter(f=>f.cat===activeCat);
+  document.getElementById('feedList').innerHTML=toShow.map(f=>{
+    const s=statuses[f.id]||'pending';
+    const icon=s==='load'||s==='loading'?`<span class="feed-st st-load">↻</span>`:s==='ok'?`<span class="feed-st st-ok">✓</span>`:s==='err'||s==='error'?`<span class="feed-st st-err" onclick="retryFeed('${f.id}')" title="Click to retry">↺</span>`:`<span class="feed-st" style="color:var(--border)">·</span>`;
+    const isCust=customFeeds.some(c=>c.id===f.id);
+    const isActive=activeFeed===f.id;
+    return `<div class="feed-row${isActive?' active':''}" title="${esc(f.url||'')}" onclick="setFeed('${f.id}')" style="cursor:pointer${isActive?';background:var(--hover);color:var(--fg)':''}"><div class="feed-dot" style="background:${CAT_COLORS[f.cat]||'#555'}"></div><span class="feed-name">${esc(f.name)}</span>${isCust?`<button class="feed-rm" onclick="event.stopPropagation();openModal('${f.id}')" title="Edit feed" style="display:none">✎</button><button class="feed-rm" onclick="event.stopPropagation();removeFeed('${f.id}')" title="Remove feed">✕</button>`:''} ${icon}</div>`;
+  }).join('');
+}
+
+// ── Custom feeds ─────────────────────────────────────────────
+function openModal(editId){
+  editingFeedId=editId||null;
+  document.getElementById('modalTitle').textContent=editId?'Edit Feed':'Add Custom Feed';
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fName').focus(),50);
+}
+function closeModal(){
+  editingFeedId=null;
+  document.getElementById('overlay').classList.remove('open');
+  ['fName','fUrl'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCat').value='ai';
+}
+function ovClick(e){if(e.target===document.getElementById('overlay'))closeModal()}
+
+async function saveFeed(){
+  const name=document.getElementById('fName').value.trim(),url=document.getElementById('fUrl').value.trim(),cat=document.getElementById('fCat').value;
+  if(!name||!url){toast('Please fill in both fields');return}
+  if(editingFeedId){
+    const idx=customFeeds.findIndex(f=>f.id===editingFeedId);
+    const fidx=feeds.findIndex(f=>f.id===editingFeedId);
+    if(idx>-1)customFeeds[idx]={...customFeeds[idx],name,url,cat};
+    if(fidx>-1)feeds[fidx]={...feeds[fidx],name,url,cat};
+    localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+    closeModal();renderFeedList();renderArticles();toast(`"${name}" updated`);
+    return;
+  }
+  const feed={id:'c_'+Date.now(),name,url,cat};
+  closeModal();toast(`Adding "${name}"…`);
+  customFeeds.push(feed);feeds.push(feed);localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+  const arts=await fetchOneProxy(feed);
+  const newArts=arts.map(a=>({...a,id:feed.id+'::'+a.link,source:feed.name,cat:feed.cat,feedId:feed.id}));
+  const seen=new Set(allArts.map(a=>a.id));
+  allArts=[...allArts,...newArts.filter(a=>!seen.has(a.id))].sort((a,b)=>toTS(b.date)-toTS(a.date));
+  updateCounts();renderFeedList();renderArticles();toast(`"${name}" added`);
+}
+
+async function removeFeed(id){
+  customFeeds=customFeeds.filter(f=>f.id!==id);localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+  feeds=feeds.filter(f=>f.id!==id);allArts=allArts.filter(a=>a.feedId!==id);delete statuses[id];
+  renderFeedList();updateCounts();renderArticles();toast('Feed removed');
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el=Object.assign(document.createElement('div'),{className:'toast',textContent:msg});
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
+}
+
+// ── Muted keywords ───────────────────────────────────────────
+function addMuted(e){
+  if(e.key!=='Enter')return;
+  const inp=document.getElementById('mutedInput'),w=inp.value.trim().toLowerCase();
+  if(!w)return;mutedWords.add(w);inp.value='';
+  localStorage.setItem('nh_muted',JSON.stringify([...mutedWords]));
+  renderMutedList();renderArticles();updateCounts();toast('🔇 "'+w+'" muted');
+}
+function removeMuted(w){
+  mutedWords.delete(w);localStorage.setItem('nh_muted',JSON.stringify([...mutedWords]));
+  renderMutedList();renderArticles();updateCounts();toast('"'+w+'" unmuted');
+}
+function renderMutedList(){
+  const el=document.getElementById('mutedList');if(!el)return;
+  el.innerHTML=[...mutedWords].map(w=>`<span class="muted-tag">${esc(w)}<button onclick="removeMuted('${esc(w)}')">×</button></span>`).join('');
+}
+function toggleMutedPanel(){
+  const w=document.getElementById('mutedWrap');if(w)w.style.display=w.style.display==='none'?'':'none';
+}
+
+// ── Sort order ───────────────────────────────────────────────
+function setSortOrder(v){
+  sortOrder=v;localStorage.setItem('nh_sort',v);updateURL();renderArticles();
+}
+
+// ── Multi-column layout ──────────────────────────────────────
+function cycleLayout(){
+  colLayout=colLayout>=3?1:colLayout+1;
+  localStorage.setItem('nh_col',colLayout);
+  const o=document.getElementById('artsOuter');
+  o.classList.remove('col2','col3');
+  if(colLayout===2)o.classList.add('col2');
+  if(colLayout===3)o.classList.add('col3');
+  const icons=['⊟','⊞','⊚'];
+  const btn=document.getElementById('colBtn');if(btn)btn.textContent=icons[colLayout-1];
+  toast(['Single column','2 columns','3 columns'][colLayout-1]);
+}
+
+// ── Font size ────────────────────────────────────────────────
+function adjustFont(d){
+  fontSize=Math.round(Math.max(0.75,Math.min(1.5,fontSize+d))*100)/100;
+  localStorage.setItem('nh_fs',fontSize);
+  document.documentElement.style.setProperty('--fs',fontSize);
+}
+
+// ── Mark all read / clear history ────────────────────────────
+function markAllRead(){
+  visible().forEach(a=>{readSet.add(a.id)});
+  localStorage.setItem('nh_read',JSON.stringify([...readSet].slice(-5000)));
+  renderArticles();updateCounts();toast('✓ All marked as read');
+}
+function clearHistory(){
+  histArts=[];localStorage.removeItem('nh_hist_arts');
+  updateCounts();renderArticles();toast('History cleared');
+}
+
+// ── OPML import ──────────────────────────────────────────────
+function triggerOPMLImport(){document.getElementById('opmlInput').click()}
+async function handleOPML(e){
+  const file=e.target.files[0];if(!file)return;
+  const text=await file.text();
+  try{
+    const doc=new DOMParser().parseFromString(text,'text/xml');
+    if(doc.querySelector('parsererror'))throw 0;
+    const outlines=doc.querySelectorAll('outline[xmlUrl]');
+    let added=0;
+    outlines.forEach(o=>{
+      const url=o.getAttribute('xmlUrl'),name=o.getAttribute('text')||o.getAttribute('title')||url;
+      if(!url||customFeeds.some(f=>f.url===url)||DEFAULT_FEEDS.some(f=>f.url===url))return;
+      const feed={id:'c_'+Date.now()+'_'+added,name,url,cat:'general'};
+      customFeeds.push(feed);feeds.push(feed);added++;
+    });
+    localStorage.setItem('nh_custom',JSON.stringify(customFeeds));
+    renderFeedList();toast('Imported '+added+' feed'+(added!==1?'s':''));
+  }catch(err){toast('Invalid OPML file');}
+  e.target.value='';
+}
+
+// ── OPML export ──────────────────────────────────────────────
+function exportOPML(){
+  if(!customFeeds.length){toast('No custom feeds to export');return}
+  const cats={};
+  customFeeds.forEach(f=>{if(!cats[f.cat])cats[f.cat]=[];cats[f.cat].push(f)});
+  let xml='<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head><title>NewsHub Feeds</title></head>\n  <body>\n';
+  Object.entries(cats).forEach(([cat,fs])=>{
+    xml+='    <outline text="'+(CAT_LABELS[cat]||cat)+'" title="'+(CAT_LABELS[cat]||cat)+'">\n';
+    fs.forEach(f=>{xml+='      <outline type="rss" text="'+esc(f.name)+'" title="'+esc(f.name)+'" xmlUrl="'+esc(f.url)+'"/>\n'});
+    xml+='    </outline>\n';
+  });
+  xml+='  </body>\n</opml>';
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([xml],{type:'text/xml'})),download:'newshub-feeds.opml'});
+  a.click();toast('OPML exported!');
+}
+
+// ── Article deduplication ────────────────────────────────────
+function dedupeArts(arts){
+  const sig=t=>(t||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ').filter(w=>w.length>3).slice(0,8).sort().join(' ');
+  const seen=new Map();
+  arts.forEach(a=>{
+    const s=sig(a.title);
+    if(!s){seen.set(a.id,{...a,_alts:[]});return}
+    if(!seen.has(s))seen.set(s,{...a,_alts:[]});
+    else if(seen.get(s).source!==a.source)seen.get(s)._alts.push(a.source);
+  });
+  return [...seen.values()];
+}
+
+// ── Browser notifications ────────────────────────────────────
+async function requestNotifPermission(){
+  if(!('Notification' in window))return toast('Notifications not supported');
+  const p=await Notification.requestPermission();
+  if(p==='granted'){toast('🔔 Breaking news notifications enabled');document.getElementById('notifBar').classList.remove('vis')}
+  else toast('Notification permission denied');
+}
+function dismissNotifBar(){
+  localStorage.setItem('nh_notif_dismissed','1');notifDismissed=true;
+  document.getElementById('notifBar').classList.remove('vis');
+}
+function checkBreakingNotifs(arts){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  const newB=arts.filter(a=>a.cat==='breaking'&&!lastBreakingIds.has(a.id));
+  if(newB.length&&lastBreakingIds.size>0){
+    const n=new Notification('🔴 '+newB.length+' new breaking '+(newB.length===1?'story':'stories'),{body:newB[0].title,tag:'nh-breaking'});
+    n.onclick=()=>{window.focus();setCat('breaking');n.close()};
+  }
+  arts.filter(a=>a.cat==='breaking').forEach(a=>lastBreakingIds.add(a.id));
+}
+
+// ── Shareable URL ────────────────────────────────────────────
+function updateURL(){
+  try{
+    const p=new URLSearchParams();
+    if(activeCat!=='all')p.set('cat',activeCat);
+    if(activeFeed)p.set('feed',activeFeed);
+    if(timeFilter!=='all')p.set('tf',timeFilter);
+    if(sortOrder!=='newest')p.set('sort',sortOrder);
+    const q=p.toString();
+    history.replaceState(null,'',q?window.location.pathname+'?'+q:window.location.pathname);
+  }catch(e){}
+}
+function restoreFromURL(){
+  try{
+    const p=new URLSearchParams(window.location.search);
+    if(p.get('cat')&&CAT_LABELS[p.get('cat')])activeCat=p.get('cat');
+    if(p.get('feed'))activeFeed=p.get('feed');
+    if(p.get('tf'))timeFilter=p.get('tf');
+    if(p.get('sort'))sortOrder=p.get('sort');
+  }catch(e){}
+}
+
+// ── Theme ────────────────────────────────────────────────────
+function toggleTheme(){
+  darkMode=!darkMode;
+  document.documentElement.classList.toggle('light',!darkMode);
+  document.getElementById('themeBtn').textContent=darkMode?'🌙':'☀️';
+  localStorage.setItem('nh_theme',darkMode?'dark':'light');
+}
+if(localStorage.getItem('nh_theme')==='light'){darkMode=false;document.documentElement.classList.add('light');setTimeout(()=>{const b=document.getElementById('themeBtn');if(b)b.textContent='☀️'},0)}
+
+// ── Time filter ──────────────────────────────────────────────
+function setTimeFilter(tf){
+  timeFilter=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
+  updateURL();renderArticles();
+}
+
+// ── Density toggle ───────────────────────────────────────────
+function toggleDensity(){
+  compactMode=!compactMode;
+  document.getElementById('artsOuter').classList.toggle('compact',compactMode);
+  document.getElementById('densityBtn').textContent=compactMode?'⊟':'⊞';
+  toast(compactMode?'Compact view':'Full view');
+}
+
+// ── Help modal ───────────────────────────────────────────────
+function openHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
+
+// ── Boot ──────────────────────────────────────────────────────
+restoreFromURL();
+feeds=[...DEFAULT_FEEDS,...customFeeds];
+// Restore font size
+if(fontSize!==1)document.documentElement.style.setProperty('--fs',fontSize);
+// Restore column layout
+if(colLayout===2){document.getElementById('artsOuter').classList.add('col2');const b=document.getElementById('colBtn');if(b)b.textContent='⊞'}
+if(colLayout===3){document.getElementById('artsOuter').classList.add('col3');const b=document.getElementById('colBtn');if(b)b.textContent='⊚'}
+// Restore sort
+const ss=document.getElementById('sortSel');if(ss)ss.value=sortOrder;
+// Render muted list
+renderMutedList();
+// Sync category buttons from restored URL state
+document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===activeCat));
+document.getElementById('tbTitle').textContent=CAT_LABELS[activeCat]||'All Sources';
+renderFeedList();updateCounts();refreshAll();
+</script>
+</body>
+</html>
