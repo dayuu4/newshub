@@ -1,0 +1,21 @@
+{
+  "name": "NewsHub",
+  "short_name": "NewsHub",
+  "description": "Your personal all-in-one news aggregator",
+  "start_url": "/newshub/",
+  "scope": "/newshub/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#131417",
+  "theme_color": "#131417",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news"],
+  "lang": "en-US"
+}
