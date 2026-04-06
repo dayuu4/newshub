@@ -1,5 +1,5 @@
 // NewsHub Service Worker v1
-const CACHE = 'newshub-v2';
+const CACHE = 'newshub-v3';
 const SHELL = ['/newshub/','/newshub/index.html','/newshub/manifest.json'];
 
 self.addEventListener('install', e => {
