@@ -318,6 +318,13 @@ mark{background:rgba(250,204,21,.3);color:inherit;border-radius:2px;padding:0 1p
         <option value="unread">Unread first</option>
       </select>
     </div>
+    <div id="sportFilterBar" style="display:none;gap:6px;padding:8px 16px 0;flex-wrap:wrap">
+      <button class="sf-btn active" data-sf="all" onclick="setSportFilter('all')">🏆 All Sports</button>
+      <button class="sf-btn" data-sf="nba" onclick="setSportFilter('nba')">🏀 NBA</button>
+      <button class="sf-btn" data-sf="nfl" onclick="setSportFilter('nfl')">🏈 NFL</button>
+      <button class="sf-btn" data-sf="soccer" onclick="setSportFilter('soccer')">⚽ Soccer</button>
+      <button class="sf-btn" data-sf="general" onclick="setSportFilter('general')">📰 General</button>
+    </div>
     <div class="arts-outer" id="artsOuter">
       <div class="state-box">
         <div class="state-icon">⚡</div>
