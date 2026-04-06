@@ -142,6 +142,23 @@
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
     ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+    /* Light theme */
+    :root.light{--dark:#f0f2f5;--darker:#e8eaed;--card:#fff;--border:#dde1e7;--text:#111827;--muted:#4b5563;--faint:#9ca3af;--hover:#e5e7eb;--shadow:0 2px 10px rgba(0,0,0,.08);--glow:0 0 14px rgba(0,102,255,.12)}
+    :root.light .sb-head{background:linear-gradient(160deg,#dbeafe 0%,#eff6ff 100%)}
+    .tf-bar{display:flex;align-items:center;gap:5px;padding:7px 18px;border-bottom:1px solid var(--border);background:var(--dark);flex-shrink:0;flex-wrap:wrap}
+    .tf-lbl{font-size:10.5px;font-weight:700;color:var(--faint);margin-right:2px;white-space:nowrap}
+    .tf-btn{padding:3px 11px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--muted);cursor:pointer;font-size:11.5px;font-weight:600;transition:all .13s;font-family:inherit}
+    .tf-btn:hover{border-color:var(--blue);color:var(--blue)}
+    .tf-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .arts-outer.compact .art-desc{display:none}
+    .arts-outer.compact .card{padding:9px 14px}
+    .arts-outer.compact .art-title{font-size:13.5px;margin-bottom:0}
+    .arts-outer.compact .arts-list{gap:4px}
+    .ico-btn{padding:6px 10px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--muted);cursor:pointer;font-size:13px;transition:all .13s;font-family:inherit;white-space:nowrap}
+    .ico-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,102,255,.07)}
+    .kb-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center;margin-top:4px}
+    .kb-key{background:var(--hover);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11.5px;font-weight:700;font-family:monospace;color:var(--text);white-space:nowrap;text-align:center}
+    .kb-desc{font-size:12.5px;color:var(--muted)}
     @media(max-width:640px){.sb{display:none}.tb-title{display:none}}
   </style>
 </head>
@@ -151,7 +168,10 @@
   <!-- SIDEBAR -->
   <aside class="sb">
     <div class="sb-head">
-      <div class="logo"><span class="logo-icon">⚡</span>NewsHub</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="logo"><span class="logo-icon">⚡</span>NewsHub</div>
+        <button class="ico-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
+      </div>
       <div class="mode-badge mode-cloud"><span class="mode-dot"></span>🌐 Cloud</div>
       <div class="upd-txt" id="updTxt">Never refreshed</div>
       <div class="next-ref" id="nextRef"></div>
@@ -185,6 +205,8 @@
         <span class="srch-ico">🔍</span>
         <input class="srch" id="srchInput" type="text" placeholder="Search articles… (or press R to refresh, B for bookmarks)" oninput="onSearch(this.value)">
       </div>
+      <button class="ico-btn" id="densityBtn" onclick="toggleDensity()" title="Toggle compact view">⊞</button>
+      <button class="ico-btn" onclick="openHelp()" title="Keyboard shortcuts (?)">⌨</button>
       <button class="ref-btn" id="refBtn" onclick="refreshAll()">
         <span class="ref-ico" id="refIco">↻</span> Refresh
       </button>
@@ -194,6 +216,14 @@
       <span id="statTxt">Loading…</span>
       <span id="statOk"  style="display:none" class="stat-ok"></span>
       <span id="statErr" style="display:none" class="stat-err"></span>
+    </div>
+    <div class="tf-bar">
+      <span class="tf-lbl">Time:</span>
+      <button class="tf-btn active" data-tf="all" onclick="setTimeFilter('all')">All</button>
+      <button class="tf-btn" data-tf="1" onclick="setTimeFilter('1')">1h</button>
+      <button class="tf-btn" data-tf="6" onclick="setTimeFilter('6')">6h</button>
+      <button class="tf-btn" data-tf="24" onclick="setTimeFilter('24')">24h</button>
+      <button class="tf-btn" data-tf="168" onclick="setTimeFilter('168')">7 days</button>
     </div>
     <div class="arts-outer" id="artsOuter">
       <div class="state-box">
@@ -221,10 +251,31 @@
         <option value="tech">💻 Tech</option>
         <option value="finance">📈 Finance</option>
         <option value="general">📚 General</option>
+        <option value="breaking">🔴 Breaking</option>
       </select></div>
     <div class="m-actions">
       <button class="btn btn-g" onclick="closeModal()">Cancel</button>
       <button class="btn btn-p" onclick="saveFeed()">Add Feed</button>
+    </div>
+  </div>
+</div>
+
+<!-- KEYBOARD HELP MODAL -->
+<div class="overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="modal">
+    <h3>⌨ Keyboard Shortcuts</h3>
+    <div class="kb-grid">
+      <span class="kb-key">R</span><span class="kb-desc">Refresh all feeds</span>
+      <span class="kb-key">B</span><span class="kb-desc">Toggle Bookmarks</span>
+      <span class="kb-key">/</span><span class="kb-desc">Focus search bar</span>
+      <span class="kb-key">Esc</span><span class="kb-desc">Clear search / close modal</span>
+      <span class="kb-key">1–5</span><span class="kb-desc">Switch category (All, AI, Tech, Finance, General)</span>
+      <span class="kb-key">D</span><span class="kb-desc">Toggle compact/full card density</span>
+      <span class="kb-key">T</span><span class="kb-desc">Toggle light/dark theme</span>
+      <span class="kb-key">?</span><span class="kb-desc">Show this help</span>
+    </div>
+    <div class="m-actions" style="margin-top:22px">
+      <button class="btn btn-p" onclick="closeHelp()">Got it</button>
     </div>
   </div>
 </div>
@@ -280,6 +331,7 @@ const DEFAULT_FEEDS = [
 
 // ── State ───────────────────────────────────────────────────
 let allArts=[], activeCat='all', activeFeed=null, searchQ='', loading=false, showArch=false;
+let timeFilter='all', compactMode=false, darkMode=true;
 let statuses={}, feeds=[];
 
 const readSet   = new Set(JSON.parse(localStorage.getItem('nh_read')||'[]'));
@@ -419,9 +471,20 @@ setInterval(checkAutoRefresh,60000);updateNextLabel();
 
 // Keyboard shortcuts
 document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-  if(e.key==='r'||e.key==='R')refreshAll();
-  if(e.key==='b'||e.key==='B')setCat(activeCat==='bookmarks'?'all':'bookmarks');
+  if(e.key==='Escape'){
+    if(document.getElementById('helpOverlay').classList.contains('open')){closeHelp();return}
+    if(document.getElementById('overlay').classList.contains('open')){closeModal();return}
+    const s=document.getElementById('srchInput');if(s.value){s.value='';onSearch('');s.blur();return}
+  }
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'){if(e.key==='Escape')e.target.blur();return}
+  if(e.key==='r'||e.key==='R'){refreshAll();return}
+  if(e.key==='b'||e.key==='B'){setCat(activeCat==='bookmarks'?'all':'bookmarks');return}
+  if(e.key==='/'){e.preventDefault();document.getElementById('srchInput').focus();return}
+  if(e.key==='d'||e.key==='D'){toggleDensity();return}
+  if(e.key==='t'||e.key==='T'){toggleTheme();return}
+  if(e.key==='?'){openHelp();return}
+  const cats=['all','ai','tech','finance','general'];
+  if(e.key>='1'&&e.key<='5'){setCat(cats[parseInt(e.key)-1]);return}
 });
 
 // ── Bookmarks ────────────────────────────────────────────────
@@ -457,6 +520,7 @@ function visible(){
   let a=allArts;
   if(activeFeed)a=a.filter(x=>x.feedId===activeFeed);
   else if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);
+  if(timeFilter!=='all'){const cutoff=Date.now()-parseInt(timeFilter)*3600000;a=a.filter(x=>toTS(x.date)>=cutoff)}
   if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));
   return a;
 }
@@ -563,6 +627,34 @@ function toast(msg){
   const el=Object.assign(document.createElement('div'),{className:'toast',textContent:msg});
   document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
 }
+
+// ── Theme ────────────────────────────────────────────────────
+function toggleTheme(){
+  darkMode=!darkMode;
+  document.documentElement.classList.toggle('light',!darkMode);
+  document.getElementById('themeBtn').textContent=darkMode?'🌙':'☀️';
+  localStorage.setItem('nh_theme',darkMode?'dark':'light');
+}
+if(localStorage.getItem('nh_theme')==='light'){darkMode=false;document.documentElement.classList.add('light');setTimeout(()=>{const b=document.getElementById('themeBtn');if(b)b.textContent='☀️'},0)}
+
+// ── Time filter ──────────────────────────────────────────────
+function setTimeFilter(tf){
+  timeFilter=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
+  renderArticles();
+}
+
+// ── Density toggle ───────────────────────────────────────────
+function toggleDensity(){
+  compactMode=!compactMode;
+  document.getElementById('artsOuter').classList.toggle('compact',compactMode);
+  document.getElementById('densityBtn').textContent=compactMode?'⊟':'⊞';
+  toast(compactMode?'Compact view':'Full view');
+}
+
+// ── Help modal ───────────────────────────────────────────────
+function openHelp(){document.getElementById('helpOverlay').classList.add('open')}
+function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}
 
 // ── Boot ──────────────────────────────────────────────────────
 feeds=[...DEFAULT_FEEDS,...customFeeds];
