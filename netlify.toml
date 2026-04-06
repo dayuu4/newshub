@@ -1,0 +1,20 @@
+[build]
+  publish   = "."
+  functions = "netlify/functions"
+
+# Map /api/* to Netlify Functions (called by newshub/index.html)
+[[redirects]]
+  from   = "/api/articles"
+  to     = "/.netlify/functions/articles"
+  status = 200
+
+[[redirects]]
+  from   = "/api/ping"
+  to     = "/.netlify/functions/ping"
+  status = 200
+
+# Ensure /newshub → /newshub/ (trailing slash) serves index.html cleanly
+[[redirects]]
+  from   = "/newshub"
+  to     = "/newshub/"
+  status = 301
