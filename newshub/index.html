@@ -168,6 +168,7 @@
       <button class="cat-btn" data-cat="tech"    onclick="setCat('tech')">    💻 Tech        <span class="cat-cnt" id="cnt-tech">—</span></button>
       <button class="cat-btn" data-cat="finance" onclick="setCat('finance')"> 📈 Finance     <span class="cat-cnt" id="cnt-finance">—</span></button>
       <button class="cat-btn" data-cat="general" onclick="setCat('general')"> 📚 General     <span class="cat-cnt" id="cnt-general">—</span></button>
+      <button class="cat-btn" data-cat="breaking" onclick="setCat('breaking')">🔴 Breaking    <span class="cat-cnt" id="cnt-breaking">—</span></button>
     </div>
     <div class="sb-sec"><span class="sb-lbl">Sources</span></div>
     <div class="feeds-scr" id="feedList"></div>
@@ -234,8 +235,8 @@
 // ── Config ──────────────────────────────────────────────────
 const REFRESH_HRS  = [9,12,15,18,21];
 const ARCHIVE_DAYS = 7;
-const CAT_COLORS   = {ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706'};
-const CAT_LABELS   = {all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',bookmarks:'Bookmarks'};
+const CAT_COLORS   = {ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706',breaking:'#dc2626'};
+const CAT_LABELS   = {all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',breaking:'Breaking News',bookmarks:'Bookmarks'};
 
 // Proxy strategies — used ONLY for user-added custom feeds (default feeds are
 // fetched server-side with no CORS restrictions)
@@ -462,7 +463,7 @@ function visible(){
 
 // ── Rendering ────────────────────────────────────────────────
 function updateCounts(){
-  const c={all:0,ai:0,tech:0,finance:0,general:0};
+  const c={all:0,ai:0,tech:0,finance:0,general:0,breaking:0};
   allArts.forEach(a=>{c.all++;if(c[a.cat]!==undefined)c[a.cat]++});
   Object.entries(c).forEach(([k,v])=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=v});
   const bel=document.getElementById('cnt-bm');if(bel)bel.textContent=bmSet.size;
