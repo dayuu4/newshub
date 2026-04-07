@@ -129,7 +129,7 @@ function parseFeed(text, feed) {
       const link = (getTag(it,'link') || getTag(it,'guid') || '').trim();
       const date = parseDate(getTag(it,'pubDate') || getTag(it,'date'));
       const desc = stripTags(getTag(it,'description') || getTag(it,'summary')).slice(0,280);
-      const imgM=e.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||e.match(/<media:content[^>]+url="([^"]+)"/i)||e.match(/<enclosure[^>]+url="([^"]+)"/i);
+      const imgM=it.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||it.match(/<media:content[^>]+url="([^"]+)"/i)||it.match(/<enclosure[^>]+url="([^"]+)"/i);
       const img=imgM?imgM[1]:null;
       if (link) articles.push({title,link,date,desc,img,source:feed.name,cat:feed.cat,feedId:feed.id});
     }
@@ -145,8 +145,8 @@ function fetchFeed(feed, redirects = 0) {
       const lib = u.protocol === 'https:' ? https : http;
       const req = lib.request({
         hostname: u.hostname, path: u.pathname + u.search, port: u.port || undefined,
-        headers: {'User-Agent':'Mozilla/5.0 NewsHub/3.0','Accept':'application/rss+xml,application/atom+xml,*/*'},
-        timeout: 7000,
+        headers: {'User-Agent':'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)','Accept':'application/rss+xml,application/atom+xml,application/xml,text/xml,*/*','Accept-Language':'en-US,en;q=0.9','Accept-Encoding':'gzip, deflate, br'},
+        timeout: 9000,
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           return fetchFeed({...feed, url: new URL(res.headers.location, feed.url).href}, redirects+1).then(resolve);
