@@ -231,6 +231,15 @@ async function fetchOneProxy(feed){
     const apiUrl=`/api/articles?url=${encodeURIComponent(feed.url)}&name=${encodeURIComponent(feed.name)}&cat=${encodeURIComponent(feed.cat)}`;
     const r=await fx(apiUrl,15000);
     const arts=await r.json();
+    // If server auto-discovered a different feed URL, persist it
+    const resolvedUrl=r.headers.get('x-feed-url');
+    if(resolvedUrl&&resolvedUrl!==feed.url){
+      feed.url=resolvedUrl;
+      const ci=customFeeds.findIndex(f=>f.id===feed.id);
+      if(ci>=0){customFeeds[ci].url=resolvedUrl;localStorage.setItem('nh_custom',JSON.stringify(customFeeds));}
+      const fi=feeds.findIndex(f=>f.id===feed.id);
+      if(fi>=0)feeds[fi].url=resolvedUrl;
+    }
     const normalised=arts.map(a=>({title:a.title,link:a.link,date:a.date?new Date(a.date):null,desc:a.desc||''})).filter(a=>a.link&&a.title);
     statuses[feed.id]=normalised.length?'ok':'err';
     renderFeedList();return normalised;
