@@ -119,7 +119,7 @@ function parseFeed(text, feed) {
       const date = parseDate(getTag(e,'published') || getTag(e,'updated'));
       const desc = stripTags(getTag(e,'summary') || getTag(e,'content')).slice(0,280);
       // Extract thumbnail
-      const imgM = e.match(/<media:thumbnail[^>]+url="([^"]++"/i) ||
+      const imgM = e.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
                    e.match(/<media:content[^>]+url="([^"]+)"/i) ||
                    e.match(/<enclosure[^>]+url="([^"]+)"/i);
       const img = imgM ? imgM[1] : null;
@@ -155,7 +155,7 @@ function discoverFeedUrl(pageUrl, redirects = 0) {
         path: u.pathname + u.search,
         port: u.port || undefined,
         headers: { 'User-Agent': 'Mozilla/5.0 NewsHub/3.0', 'Accept': 'text/html,application/xhtml+xml,*/*' },
-        timeout: 7000,
+        timeout: 4000,
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           return discoverFeedUrl(new URL(res.headers.location, pageUrl).href, redirects + 1).then(resolve);
@@ -244,13 +244,13 @@ exports.handler = async (event) => {
     let feed = { id: 'custom', name: feedName, url: resolvedUrl, cat: feedCat };
 
     // 1. Try the URL as-is
-    let arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+    let arts = await Promise.race([fetchFeed(feed), timeout(5000)]);
 
     // 2. If empty, try HTML link auto-discovery (<link rel="alternate" type="application/rss+xml">)
     if (!arts || arts.length === 0) {
       const discovered = await Promise.race([
         discoverFeedUrl(resolvedUrl),
-        timeout(6000).then(() => null),
+        timeout(4000).then(() => null),
       ]);
       if (discovered && discovered !== resolvedUrl) {
         resolvedUrl = discovered;
@@ -297,7 +297,7 @@ exports.handler = async (event) => {
   }
 
   const results = await Promise.allSettled(
-    DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(8500)]))
+    DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(4500)]))
   );
   const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : []);
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
