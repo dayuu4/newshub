@@ -65,6 +65,7 @@ const DEFAULT_FEEDS = [
   {id:'guardian-world',name:'Guardian World',url:'https://www.theguardian.com/world/rss',cat:'breaking'},
   {id:'reuters',name:'Reuters',url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',cat:'breaking'},
   {id:'sky-news',name:'Sky News',url:'https://feeds.skynews.com/feeds/rss/world.xml',cat:'breaking'},
+  // Sports
   {id:'espn',name:'ESPN Top Stories',url:'https://www.espn.com/espn/rss/news',cat:'sports'},
   {id:'espn-nba',name:'ESPN NBA',url:'https://www.espn.com/espn/rss/nba/news',cat:'sports'},
   {id:'espn-nfl',name:'ESPN NFL',url:'https://www.espn.com/espn/rss/nfl/news',cat:'sports'},
@@ -117,7 +118,8 @@ function parseFeed(text, feed) {
       const link = lm ? lm[1] : '';
       const date = parseDate(getTag(e,'published') || getTag(e,'updated'));
       const desc = stripTags(getTag(e,'summary') || getTag(e,'content')).slice(0,280);
-      const imgM = e.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
+      // Extract thumbnail
+      const imgM = e.match(/<media:thumbnail[^>]+url="([^"]++"/i) ||
                    e.match(/<media:content[^>]+url="([^"]+)"/i) ||
                    e.match(/<enclosure[^>]+url="([^"]+)"/i);
       const img = imgM ? imgM[1] : null;
@@ -130,6 +132,7 @@ function parseFeed(text, feed) {
       const link = (getTag(it,'link') || getTag(it,'guid') || '').trim();
       const date = parseDate(getTag(it,'pubDate') || getTag(it,'date'));
       const desc = stripTags(getTag(it,'description') || getTag(it,'summary')).slice(0,280);
+      // Extract thumbnail
       const imgM = it.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
                    it.match(/<media:content[^>]+url="([^"]+)"/i) ||
                    it.match(/<enclosure[^>]+url="([^"]+)"/i);
@@ -138,6 +141,59 @@ function parseFeed(text, feed) {
     }
   }
   return articles;
+}
+
+// Auto-discover RSS/Atom feed URL from an HTML page URL
+function discoverFeedUrl(pageUrl, redirects = 0) {
+  return new Promise((resolve) => {
+    if (redirects > 3) return resolve(null);
+    try {
+      const u = new URL(pageUrl);
+      const lib = u.protocol === 'https:' ? https : http;
+      const req = lib.request({
+        hostname: u.hostname,
+        path: u.pathname + u.search,
+        port: u.port || undefined,
+        headers: { 'User-Agent': 'Mozilla/5.0 NewsHub/3.0', 'Accept': 'text/html,application/xhtml+xml,*/*' },
+        timeout: 7000,
+      }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return discoverFeedUrl(new URL(res.headers.location, pageUrl).href, redirects + 1).then(resolve);
+        }
+        const ct = (res.headers['content-type'] || '').toLowerCase();
+        // Already a feed by content-type
+        if (ct.includes('xml') || ct.includes('rss') || ct.includes('atom')) {
+          return resolve(pageUrl);
+        }
+        let data = '';
+        res.setEncoding('utf8');
+        res.on('data', c => { data += c; if (data.length > 100000) req.destroy(); });
+        res.on('end', () => {
+          const trimmed = data.trim();
+          // Looks like XML/RSS already
+          if (trimmed.startsWith('<?xml') || /<(rss|feed)\b/i.test(trimmed.slice(0, 500))) {
+            return resolve(pageUrl);
+          }
+          // Search for <link rel="alternate" type="application/rss+xml" href="...">
+          const re = /<link([^>]+)>/gi;
+          let m;
+          while ((m = re.exec(data)) !== null) {
+            const attrs = m[1];
+            if (/rel=["']alternate["']/i.test(attrs) &&
+                /type=["']application\/(rss|atom)\+xml["']/i.test(attrs)) {
+              const hrefM = attrs.match(/href=["']([^"']+)["']/i);
+              if (hrefM) return resolve(new URL(hrefM[1], pageUrl).href);
+            }
+          }
+          resolve(null);
+        });
+        res.on('error', () => resolve(null));
+      });
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.on('error', () => resolve(null));
+      req.end();
+    } catch { resolve(null); }
+  });
 }
 
 function fetchFeed(feed, redirects = 0) {
@@ -169,9 +225,10 @@ function fetchFeed(feed, redirects = 0) {
 
 const CORS = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
 
+// In-memory cache â survives warm Lambda invocations (approx 30-min TTL)
 let _cache = null;
 let _cacheTs = 0;
-const CACHE_TTL_MS = 30 * 60 * 1000;
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return {statusCode:200, headers:CORS, body:''};
@@ -181,15 +238,56 @@ exports.handler = async (event) => {
   // Single-feed proxy mode: /api/articles?url=https://... (used by custom feeds to bypass CORS)
   const qs = event.queryStringParameters || {};
   if (qs.url) {
-    const feed = {id:'custom', name:qs.name||'Custom Feed', url:qs.url, cat:qs.cat||'general'};
-    const arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+    const feedName = qs.name || 'Custom Feed';
+    const feedCat  = qs.cat  || 'general';
+    let resolvedUrl = qs.url;
+    let feed = { id: 'custom', name: feedName, url: resolvedUrl, cat: feedCat };
+
+    // 1. Try the URL as-is
+    let arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+
+    // 2. If empty, try HTML link auto-discovery (<link rel="alternate" type="application/rss+xml">)
+    if (!arts || arts.length === 0) {
+      const discovered = await Promise.race([
+        discoverFeedUrl(resolvedUrl),
+        timeout(6000).then(() => null),
+      ]);
+      if (discovered && discovered !== resolvedUrl) {
+        resolvedUrl = discovered;
+        feed = { ...feed, url: resolvedUrl };
+        arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+      }
+    }
+
+    // 3. If still empty, try common feed paths
+    if (!arts || arts.length === 0) {
+      const base = new URL(qs.url);
+      const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml'];
+      for (const path of candidates) {
+        const candidate = base.origin + path;
+        if (candidate === resolvedUrl) continue;
+        const tryArts = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(5000)]);
+        if (tryArts && tryArts.length > 0) {
+          arts = tryArts;
+          resolvedUrl = candidate;
+          break;
+        }
+      }
+    }
+
     return {
       statusCode: 200,
-      headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=900, stale-while-revalidate=3600'},
+      headers: {
+        ...CORS,
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600',
+        'X-Feed-Url': resolvedUrl,  // let the client persist the resolved URL
+      },
       body: JSON.stringify(arts || []),
     };
   }
 
+  // Serve from in-memory cache if fresh
   if (_cache && Date.now() - _cacheTs < CACHE_TTL_MS) {
     return {
       statusCode: 200,
@@ -205,6 +303,7 @@ exports.handler = async (event) => {
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
   const body = JSON.stringify(articles);
 
+  // Update in-memory cache
   _cache = body;
   _cacheTs = Date.now();
 
