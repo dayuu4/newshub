@@ -205,7 +205,7 @@ function fetchFeed(feed, redirects = 0) {
       const req = lib.request({
         hostname: u.hostname, path: u.pathname + u.search, port: u.port || undefined,
         headers: {'User-Agent':'Mozilla/5.0 NewsHub/3.0','Accept':'application/rss+xml,application/atom+xml,*/*'},
-        timeout: 7000,
+        timeout: 4000,
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           return fetchFeed({...feed, url: new URL(res.headers.location, feed.url).href}, redirects+1).then(resolve);
@@ -235,6 +235,10 @@ exports.handler = async (event) => {
 
   const timeout = (ms) => new Promise(r => setTimeout(() => r([]), ms));
 
+  // Hard 9s deadline â guarantees a graceful response before Netlify's 10s kill
+  const DEADLINE = Date.now() + 9000;
+  const remaining = () => Math.max(0, DEADLINE - Date.now());
+
   // Single-feed proxy mode: /api/articles?url=https://... (used by custom feeds to bypass CORS)
   const qs = event.queryStringParameters || {};
   if (qs.url) {
@@ -244,35 +248,36 @@ exports.handler = async (event) => {
     let feed = { id: 'custom', name: feedName, url: resolvedUrl, cat: feedCat };
 
     // 1. Try the URL as-is
-    let arts = await Promise.race([fetchFeed(feed), timeout(5000)]);
+    let arts = await Promise.race([fetchFeed(feed), timeout(Math.min(5000, remaining()))]);
 
     // 2. If empty, try HTML link auto-discovery (<link rel="alternate" type="application/rss+xml">)
     if (!arts || arts.length === 0) {
       const discovered = await Promise.race([
         discoverFeedUrl(resolvedUrl),
-        timeout(4000).then(() => null),
+        timeout(Math.min(4000, remaining())).then(() => null),
       ]);
       if (discovered && discovered !== resolvedUrl) {
         resolvedUrl = discovered;
         feed = { ...feed, url: resolvedUrl };
-        arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+        arts = await Promise.race([fetchFeed(feed), timeout(Math.min(4000, remaining()))]);
       }
     }
 
-    // 3. If still empty, try common feed paths
+    // 3. If still empty, try common feed paths in parallel â take first winner
     if (!arts || arts.length === 0) {
       const base = new URL(qs.url);
-      const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml'];
-      for (const path of candidates) {
-        const candidate = base.origin + path;
-        if (candidate === resolvedUrl) continue;
-        const tryArts = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(5000)]);
-        if (tryArts && tryArts.length > 0) {
-          arts = tryArts;
-          resolvedUrl = candidate;
-          break;
-        }
-      }
+      const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml']
+        .map(p => base.origin + p)
+        .filter(c => c !== resolvedUrl);
+      const raceResults = await Promise.allSettled(
+        candidates.map(async (candidate) => {
+          const res = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(Math.min(4000, remaining()))]);
+          if (!res || res.length === 0) throw new Error('empty');
+          return { arts: res, url: candidate };
+        })
+      );
+      const winner = raceResults.find(r => r.status === 'fulfilled');
+      if (winner) { arts = winner.value.arts; resolvedUrl = winner.value.url; }
     }
 
     return {
@@ -297,7 +302,7 @@ exports.handler = async (event) => {
   }
 
   const results = await Promise.allSettled(
-    DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(4500)]))
+    DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(Math.min(4500, remaining()))]))
   );
   const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : []);
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
