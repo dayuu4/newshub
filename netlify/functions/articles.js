@@ -65,7 +65,6 @@ const DEFAULT_FEEDS = [
   {id:'guardian-world',name:'Guardian World',url:'https://www.theguardian.com/world/rss',cat:'breaking'},
   {id:'reuters',name:'Reuters',url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',cat:'breaking'},
   {id:'sky-news',name:'Sky News',url:'https://feeds.skynews.com/feeds/rss/world.xml',cat:'breaking'},
-  // Sports
   {id:'espn',name:'ESPN Top Stories',url:'https://www.espn.com/espn/rss/news',cat:'sports'},
   {id:'espn-nba',name:'ESPN NBA',url:'https://www.espn.com/espn/rss/nba/news',cat:'sports'},
   {id:'espn-nfl',name:'ESPN NFL',url:'https://www.espn.com/espn/rss/nfl/news',cat:'sports'},
