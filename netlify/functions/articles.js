@@ -263,21 +263,20 @@ exports.handler = async (event) => {
       }
     }
 
-    // 3. If still empty, try common feed paths in parallel â take first winner
+    // 3. If still empty, try common feed paths â Promise.any resolves on first success
     if (!arts || arts.length === 0) {
       const base = new URL(qs.url);
       const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml']
         .map(p => base.origin + p)
         .filter(c => c !== resolvedUrl);
-      const raceResults = await Promise.allSettled(
+      const winner = await Promise.any(
         candidates.map(async (candidate) => {
           const res = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(Math.min(4000, remaining()))]);
           if (!res || res.length === 0) throw new Error('empty');
           return { arts: res, url: candidate };
         })
-      );
-      const winner = raceResults.find(r => r.status === 'fulfilled');
-      if (winner) { arts = winner.value.arts; resolvedUrl = winner.value.url; }
+      ).catch(() => null);
+      if (winner) { arts = winner.arts; resolvedUrl = winner.url; }
     }
 
     return {
@@ -304,7 +303,9 @@ exports.handler = async (event) => {
   const results = await Promise.allSettled(
     DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(Math.min(4500, remaining()))]))
   );
-  const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : []);
+  const seen = new Set();
+  const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : [])
+    .filter(a => { if (seen.has(a.link)) return false; seen.add(a.link); return true; });
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
   const body = JSON.stringify(articles);
 
