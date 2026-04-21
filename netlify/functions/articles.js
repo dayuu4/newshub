@@ -6,12 +6,12 @@ const DEFAULT_FEEDS = [
   {id:'one-useful-thing',name:'One Useful Thing',url:'https://www.oneusefulthing.org/feed',cat:'ai'},
   {id:'simon-willison',name:'Simon Willison',url:'https://simonwillison.net/atom/everything/',cat:'ai'},
   {id:'hf',name:'Hugging Face',url:'https://huggingface.co/blog/feed.xml',cat:'ai'},
-  {id:'the-batch',name:'The Batch (DL.AI)',url:'https://news.google.com/rss/search?q=site:deeplearning.ai&hl=en-US&gl=US&ceid=US:en',cat:'ai'},
+  {id:'the-batch',name:'The Batch (DL.AI)',url:'https://www.deeplearning.ai/the-batch/feed/',cat:'ai'},
   {id:'ai-news',name:'AI News',url:'https://www.artificialintelligence-news.com/feed/',cat:'ai'},
   {id:'mit-ai',name:'MIT AI News',url:'https://news.mit.edu/rss/topic/artificial-intelligence2',cat:'ai'},
   {id:'openai',name:'OpenAI Blog',url:'https://openai.com/news/rss.xml',cat:'ai'},
   {id:'deepmind',name:'Google DeepMind',url:'https://deepmind.google/blog/rss.xml',cat:'ai'},
-  {id:'import-ai',name:'Import AI',url:'https://news.google.com/rss/search?q=import+AI+newsletter+Jack+Clark&hl=en-US&gl=US&ceid=US:en',cat:'ai'},
+  {id:'import-ai',name:'Import AI',url:'https://jack-clark.net/feed/',cat:'ai'},
   {id:'google-ai',name:'Google AI Blog',url:'https://blog.google/technology/ai/rss/',cat:'ai'},
   {id:'nvidia-dev',name:'Nvidia AI Blog',url:'https://developer.nvidia.com/blog/feed/',cat:'ai'},
   {id:'arxiv-ai',name:'ArXiv CS.AI',url:'https://rss.arxiv.org/rss/cs.AI',cat:'ai'},
@@ -32,33 +32,33 @@ const DEFAULT_FEEDS = [
   {id:'bens-bites',name:"Ben's Bites",url:'https://www.bensbites.com/feed',cat:'ai'},
   {id:'tldr-ai',name:'TLDR AI',url:'https://tldr.tech/api/rss/ai',cat:'ai'},
   {id:'hn',name:'Hacker News',url:'https://hnrss.org/frontpage',cat:'tech'},
-  {id:'tc',name:'TechCrunch',url:'https://news.google.com/rss/search?q=site:techcrunch.com&hl=en-US&gl=US&ceid=US:en',cat:'tech'},
+  {id:'tc',name:'TechCrunch',url:'https://techcrunch.com/feed/',cat:'tech'},
   {id:'verge',name:'The Verge',url:'https://www.theverge.com/rss/index.xml',cat:'tech'},
-  {id:'ars',name:'Ars Technica',url:'https://news.google.com/rss/search?q=site:arstechnica.com&hl=en-US&gl=US&ceid=US:en',cat:'tech'},
+  {id:'ars',name:'Ars Technica',url:'https://feeds.arstechnica.com/arstechnica/index',cat:'tech'},
   {id:'engadget',name:'Engadget',url:'https://www.engadget.com/rss.xml',cat:'tech'},
   {id:'zdnet',name:'ZDNet',url:'https://www.zdnet.com/news/rss.xml',cat:'tech'},
   {id:'tldr-tech',name:'TLDR Tech',url:'https://tldr.tech/rss',cat:'tech'},
-  {id:'wired',name:'Wired',url:'https://news.google.com/rss/search?q=site:wired.com&hl=en-US&gl=US&ceid=US:en',cat:'tech'},
+  {id:'wired',name:'Wired',url:'https://www.wired.com/feed/rss',cat:'tech'},
   {id:'ieee',name:'IEEE Spectrum',url:'https://spectrum.ieee.org/feeds/feed.rss',cat:'tech'},
   {id:'9to5mac',name:'9to5Mac',url:'https://9to5mac.com/feed/',cat:'tech'},
   {id:'fast-company',name:'Fast Company',url:'https://www.fastcompany.com/latest/rss',cat:'tech'},
-  {id:'the-information',name:'The Information',url:'https://news.google.com/rss/search?q=site:theinformation.com&hl=en-US&gl=US&ceid=US:en',cat:'tech'},
-  {id:'wsj-tech',name:'WSJ Tech',url:'https://news.google.com/rss/search?q=site:wsj.com+technology&hl=en-US&gl=US&ceid=US:en',cat:'tech'},
+  {id:'the-information',name:'The Information',url:'https://www.theinformation.com/feed',cat:'tech'},
+  {id:'wsj-tech',name:'WSJ Tech',url:'https://feeds.a.dj.com/rss/RSSWSJD.xml',cat:'tech'},
   {id:'cnbc',name:'CNBC Markets',url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',cat:'finance'},
   {id:'mwatch',name:'MarketWatch',url:'https://feeds.marketwatch.com/marketwatch/topstories/',cat:'finance'},
   {id:'coindesk',name:'CoinDesk',url:'https://www.coindesk.com/arc/outboundfeeds/rss/',cat:'finance'},
   {id:'yahoo-finance',name:'Yahoo Finance',url:'https://finance.yahoo.com/news/rssindex',cat:'finance'},
   {id:'fool',name:'Motley Fool',url:'https://www.fool.com/feeds/index.aspx',cat:'finance'},
-  {id:'bloomberg-tech',name:'Bloomberg Tech',url:'https://news.google.com/rss/search?q=site:bloomberg.com+technology&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
-  {id:'bloomberg-mkts',name:'Bloomberg Markets',url:'https://news.google.com/rss/search?q=site:bloomberg.com+markets&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
-  {id:'wsj-markets',name:'WSJ Markets',url:'https://news.google.com/rss/search?q=site:wsj.com+markets&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
-  {id:'ft',name:'Financial Times',url:'https://news.google.com/rss/search?q=site:ft.com&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
-  {id:'seeking-alpha',name:'Seeking Alpha',url:'https://news.google.com/rss/search?q=site:seekingalpha.com&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
-  {id:'economist',name:'The Economist',url:'https://news.google.com/rss/search?q=site:economist.com&hl=en-US&gl=US&ceid=US:en',cat:'finance'},
+  {id:'bloomberg-tech',name:'Bloomberg Tech',url:'https://feeds.bloomberg.com/technology/news.rss',cat:'finance'},
+  {id:'bloomberg-mkts',name:'Bloomberg Markets',url:'https://feeds.bloomberg.com/markets/news.rss',cat:'finance'},
+  {id:'wsj-markets',name:'WSJ Markets',url:'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',cat:'finance'},
+  {id:'ft',name:'Financial Times',url:'https://www.ft.com/rss/home/uk',cat:'finance'},
+  {id:'seeking-alpha',name:'Seeking Alpha',url:'https://seekingalpha.com/feed.xml',cat:'finance'},
+  {id:'economist',name:'The Economist',url:'https://www.economist.com/finance-and-economics/rss.xml',cat:'finance'},
   {id:'bbc',name:'BBC News',url:'https://feeds.bbci.co.uk/news/rss.xml',cat:'general'},
   {id:'guardian',name:'The Guardian Tech',url:'https://www.theguardian.com/technology/rss',cat:'general'},
   {id:'mit-rev',name:'MIT Tech Review',url:'https://www.technologyreview.com/feed/',cat:'general'},
-  {id:'nyt-tech',name:'NYT Technology',url:'https://news.google.com/rss/search?q=site:nytimes.com+technology&hl=en-US&gl=US&ceid=US:en',cat:'general'},
+  {id:'nyt-tech',name:'NYT Technology',url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',cat:'general'},
   {id:'new-scientist',name:'New Scientist',url:'https://www.newscientist.com/feed/home/',cat:'general'},
   {id:'npr',name:'NPR News',url:'https://feeds.npr.org/1001/rss.xml',cat:'breaking'},
   {id:'al-jazeera',name:'Al Jazeera',url:'https://www.aljazeera.com/xml/rss/all.xml',cat:'breaking'},
@@ -66,13 +66,13 @@ const DEFAULT_FEEDS = [
   {id:'reuters',name:'Reuters',url:'https://news.google.com/rss/search?q=site:reuters.com&hl=en-US&gl=US&ceid=US:en',cat:'breaking'},
   {id:'sky-news',name:'Sky News',url:'https://feeds.skynews.com/feeds/rss/world.xml',cat:'breaking'},
   // Sports
-  {id:'espn',name:'ESPN Top Stories',url:'https://news.google.com/rss/search?q=site:espn.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'espn-nba',name:'ESPN NBA',url:'https://news.google.com/rss/search?q=site:espn.com+nba&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'espn-nfl',name:'ESPN NFL',url:'https://news.google.com/rss/search?q=site:espn.com+nfl&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'espn-soccer',name:'ESPN Soccer',url:'https://news.google.com/rss/search?q=site:espn.com+soccer&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'bbc-sport',name:'BBC Sport',url:'https://news.google.com/rss/search?q=site:bbc.co.uk/sport&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'bbc-football',name:'BBC Sport Football',url:'https://news.google.com/rss/search?q=bbc+football+premier+league&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
-  {id:'sky-sports',name:'Sky Sports',url:'https://news.google.com/rss/search?q=site:skysports.com&hl=en-US&gl=US&ceid=US:en',cat:'sports'},
+  {id:'espn',name:'ESPN Top Stories',url:'https://www.espn.com/espn/rss/news',cat:'sports'},
+  {id:'espn-nba',name:'ESPN NBA',url:'https://www.espn.com/espn/rss/nba/news',cat:'sports'},
+  {id:'espn-nfl',name:'ESPN NFL',url:'https://www.espn.com/espn/rss/nfl/news',cat:'sports'},
+  {id:'espn-soccer',name:'ESPN Soccer',url:'https://www.espn.com/espn/rss/soccer/news',cat:'sports'},
+  {id:'bbc-sport',name:'BBC Sport',url:'https://feeds.bbci.co.uk/sport/rss.xml',cat:'sports'},
+  {id:'bbc-football',name:'BBC Sport Football',url:'https://feeds.bbci.co.uk/sport/football/rss.xml',cat:'sports'},
+  {id:'sky-sports',name:'Sky Sports',url:'https://www.skysports.com/rss/12040',cat:'sports'},
   {id:'fotmob',name:'FotMob',url:'https://news.google.com/rss/search?q=fotmob+football+news',cat:'sports'},
   {id:'athletic',name:'The Athletic',url:'https://news.google.com/rss/search?q=site:theathletic.com',cat:'sports'},
   {id:'bleacher-report',name:'Bleacher Report',url:'https://news.google.com/rss/search?q=site:bleacherreport.com',cat:'sports'},
@@ -118,8 +118,10 @@ function parseFeed(text, feed) {
       const link = lm ? lm[1] : '';
       const date = parseDate(getTag(e,'published') || getTag(e,'updated'));
       const desc = stripTags(getTag(e,'summary') || getTag(e,'content')).slice(0,280);
-      const imgM=e.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||e.match(/<media:content[^>]+url="([^"]+)"/i)||e.match(/<enclosure[^>]+url="([^"]+)"/i);
-      const img=imgM?imgM[1]:null;
+      const imgM = e.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
+                   e.match(/<media:content[^>]+url="([^"]+)"/i) ||
+                   e.match(/<enclosure[^>]+url="([^"]+)"/i);
+      const img = imgM ? imgM[1] : null;
       if (link) articles.push({title,link,date,desc,img,source:feed.name,cat:feed.cat,feedId:feed.id});
     }
   } else {
@@ -129,8 +131,10 @@ function parseFeed(text, feed) {
       const link = (getTag(it,'link') || getTag(it,'guid') || '').trim();
       const date = parseDate(getTag(it,'pubDate') || getTag(it,'date'));
       const desc = stripTags(getTag(it,'description') || getTag(it,'summary')).slice(0,280);
-      const imgM=it.match(/<media:thumbnail[^>]+url="([^"]+)"/i)||it.match(/<media:content[^>]+url="([^"]+)"/i)||it.match(/<enclosure[^>]+url="([^"]+)"/i);
-      const img=imgM?imgM[1]:null;
+      const imgM = it.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
+                   it.match(/<media:content[^>]+url="([^"]+)"/i) ||
+                   it.match(/<enclosure[^>]+url="([^"]+)"/i);
+      const img = imgM ? imgM[1] : null;
       if (link) articles.push({title,link,date,desc,img,source:feed.name,cat:feed.cat,feedId:feed.id});
     }
   }
@@ -145,8 +149,8 @@ function fetchFeed(feed, redirects = 0) {
       const lib = u.protocol === 'https:' ? https : http;
       const req = lib.request({
         hostname: u.hostname, path: u.pathname + u.search, port: u.port || undefined,
-        headers: {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36','Accept':'application/rss+xml,application/atom+xml,application/xml,text/xml,*/*','Accept-Language':'en-US,en;q=0.9'},
-        timeout: 9000,
+        headers: {'User-Agent':'Mozilla/5.0 NewsHub/3.0','Accept':'application/rss+xml,application/atom+xml,*/*'},
+        timeout: 7000,
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           return fetchFeed({...feed, url: new URL(res.headers.location, feed.url).href}, redirects+1).then(resolve);
@@ -166,24 +170,45 @@ function fetchFeed(feed, redirects = 0) {
 
 const CORS = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
 
-// In-memory cache — survives warm Lambda invocations
 let _cache = null;
 let _cacheTs = 0;
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return {statusCode:200, headers:CORS, body:''};
-  if (_cache && Date.now() - _cacheTs < CACHE_TTL_MS) {
-    return {statusCode:200,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400','X-Cache':'HIT'},body:_cache};
-  }
+
   const timeout = (ms) => new Promise(r => setTimeout(() => r([]), ms));
+
+  // Single-feed proxy mode: /api/articles?url=https://... (used by custom feeds to bypass CORS)
+  const qs = event.queryStringParameters || {};
+  if (qs.url) {
+    const feed = {id:'custom', name:qs.name||'Custom Feed', url:qs.url, cat:qs.cat||'general'};
+    const arts = await Promise.race([fetchFeed(feed), timeout(8500)]);
+    return {
+      statusCode: 200,
+      headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=900, stale-while-revalidate=3600'},
+      body: JSON.stringify(arts || []),
+    };
+  }
+
+  if (_cache && Date.now() - _cacheTs < CACHE_TTL_MS) {
+    return {
+      statusCode: 200,
+      headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400', 'X-Cache':'HIT'},
+      body: _cache,
+    };
+  }
+
   const results = await Promise.allSettled(
     DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(8500)]))
   );
   const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : []);
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
   const body = JSON.stringify(articles);
-  _cache = body; _cacheTs = Date.now();
+
+  _cache = body;
+  _cacheTs = Date.now();
+
   return {
     statusCode: 200,
     headers: {...CORS, 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'public, s-maxage=1800, stale-while-revalidate=86400', 'X-Cache':'MISS'},
