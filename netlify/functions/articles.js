@@ -79,6 +79,17 @@ const DEFAULT_FEEDS = [
   {id:'sports-illustrated',name:'Sports Illustrated',url:'https://news.google.com/rss/search?q=site:si.com',cat:'sports'},
   {id:'nba-official',name:'NBA.com News',url:'https://news.google.com/rss/search?q=site:nba.com',cat:'sports'},
   {id:'nfl-official',name:'NFL.com News',url:'https://news.google.com/rss/search?q=site:nfl.com',cat:'sports'},
+  // Homelab / self-hosting
+  {id:'virt-howto',name:'Virtualization Howto',url:'https://www.virtualizationhowto.com/feed/',cat:'homelab'},
+  {id:'wolfgang',name:"Wolfgang's Blog",url:'https://notthebe.ee/rss/',cat:'homelab'},
+  {id:'noted-lol',name:'Noted.lol',url:'https://noted.lol/rss/',cat:'homelab'},
+  {id:'techhut',name:'TechHut.tv',url:'https://techhut.tv/feed/',cat:'homelab'},
+  {id:'selfhostrealm',name:'SelfhostRealm',url:'https://selfhostrealm.com/feed/',cat:'homelab'},
+  {id:'selfhosted-libhunt',name:'Selfhosted Libhunt',url:'https://selfhosted.libhunt.com/feed',cat:'homelab'},
+  {id:'briancmoses',name:'BrianCMoses',url:'https://blog.briancmoses.com/feed/',cat:'homelab'},
+  {id:'zerotohomelab',name:'Zero to Homelab',url:'https://zerotohomelab.cloudboxhub.com/feed/',cat:'homelab'},
+  {id:'r-selfhosted',name:'r/selfhosted',url:'https://www.reddit.com/r/selfhosted/.rss',cat:'homelab'},
+  {id:'awesome-selfhosted',name:'Awesome Self-Hosted',url:'https://github.com/awesome-selfhosted/awesome-selfhosted/commits/master.atom',cat:'homelab'},
 ];
 
 function stripTags(html) {
@@ -223,6 +234,42 @@ function fetchFeed(feed, redirects = 0) {
   });
 }
 
+// Fetch a feed, falling back to HTML link auto-discovery and common feed paths
+// when the configured URL doesn't resolve to a valid feed. Used for both the
+// single-feed proxy (custom feeds) and the default feed list, since not every
+// curated source's feed path is known in advance.
+async function fetchFeedWithFallback(feed, timeout, remaining) {
+  let resolvedUrl = feed.url;
+
+  let arts = await Promise.race([fetchFeed(feed), timeout(Math.min(5000, remaining()))]);
+  if (arts && arts.length > 0) return { arts, resolvedUrl };
+
+  const discovered = await Promise.race([
+    discoverFeedUrl(resolvedUrl),
+    timeout(Math.min(4000, remaining())).then(() => null),
+  ]);
+  if (discovered && discovered !== resolvedUrl) {
+    resolvedUrl = discovered;
+    arts = await Promise.race([fetchFeed({ ...feed, url: resolvedUrl }), timeout(Math.min(4000, remaining()))]);
+    if (arts && arts.length > 0) return { arts, resolvedUrl };
+  }
+
+  const base = new URL(feed.url);
+  const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml']
+    .map(p => base.origin + p)
+    .filter(c => c !== resolvedUrl);
+  const winner = await Promise.any(
+    candidates.map(async (candidate) => {
+      const res = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(Math.min(4000, remaining()))]);
+      if (!res || res.length === 0) throw new Error('empty');
+      return { arts: res, url: candidate };
+    })
+  ).catch(() => null);
+  if (winner) return { arts: winner.arts, resolvedUrl: winner.url };
+
+  return { arts: arts || [], resolvedUrl };
+}
+
 const CORS = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
 
 // In-memory cache â survives warm Lambda invocations (approx 30-min TTL)
@@ -244,40 +291,8 @@ exports.handler = async (event) => {
   if (qs.url) {
     const feedName = qs.name || 'Custom Feed';
     const feedCat  = qs.cat  || 'general';
-    let resolvedUrl = qs.url;
-    let feed = { id: 'custom', name: feedName, url: resolvedUrl, cat: feedCat };
-
-    // 1. Try the URL as-is
-    let arts = await Promise.race([fetchFeed(feed), timeout(Math.min(5000, remaining()))]);
-
-    // 2. If empty, try HTML link auto-discovery (<link rel="alternate" type="application/rss+xml">)
-    if (!arts || arts.length === 0) {
-      const discovered = await Promise.race([
-        discoverFeedUrl(resolvedUrl),
-        timeout(Math.min(4000, remaining())).then(() => null),
-      ]);
-      if (discovered && discovered !== resolvedUrl) {
-        resolvedUrl = discovered;
-        feed = { ...feed, url: resolvedUrl };
-        arts = await Promise.race([fetchFeed(feed), timeout(Math.min(4000, remaining()))]);
-      }
-    }
-
-    // 3. If still empty, try common feed paths â Promise.any resolves on first success
-    if (!arts || arts.length === 0) {
-      const base = new URL(qs.url);
-      const candidates = ['/feed', '/feed.xml', '/rss.xml', '/atom.xml', '/rss', '/feed/index.xml', '/index.xml']
-        .map(p => base.origin + p)
-        .filter(c => c !== resolvedUrl);
-      const winner = await Promise.any(
-        candidates.map(async (candidate) => {
-          const res = await Promise.race([fetchFeed({ ...feed, url: candidate }), timeout(Math.min(4000, remaining()))]);
-          if (!res || res.length === 0) throw new Error('empty');
-          return { arts: res, url: candidate };
-        })
-      ).catch(() => null);
-      if (winner) { arts = winner.arts; resolvedUrl = winner.url; }
-    }
+    const feed = { id: 'custom', name: feedName, url: qs.url, cat: feedCat };
+    const { arts, resolvedUrl } = await fetchFeedWithFallback(feed, timeout, remaining);
 
     return {
       statusCode: 200,
@@ -301,10 +316,10 @@ exports.handler = async (event) => {
   }
 
   const results = await Promise.allSettled(
-    DEFAULT_FEEDS.map(f => Promise.race([fetchFeed(f), timeout(Math.min(4500, remaining()))]))
+    DEFAULT_FEEDS.map(f => fetchFeedWithFallback(f, timeout, remaining))
   );
   const seen = new Set();
-  const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value || []) : [])
+  const articles = results.flatMap(r => r.status === 'fulfilled' ? (r.value.arts || []) : [])
     .filter(a => { if (seen.has(a.link)) return false; seen.add(a.link); return true; });
   articles.sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
   const body = JSON.stringify(articles);

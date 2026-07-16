@@ -144,6 +144,7 @@
       <button class="cat-btn" data-cat="tech" onclick="setCat('tech')">💻 Tech <span class="cat-cnt" id="cnt-tech">—</span></button>
       <button class="cat-btn" data-cat="finance" onclick="setCat('finance')">📈 Finance <span class="cat-cnt" id="cnt-finance">—</span></button>
       <button class="cat-btn" data-cat="general" onclick="setCat('general')">📚 General <span class="cat-cnt" id="cnt-general">—</span></button>
+      <button class="cat-btn" data-cat="homelab" onclick="setCat('homelab')">🏠 Homelab <span class="cat-cnt" id="cnt-homelab">—</span></button>
     </div>
     <div class="sb-sec"><span class="sb-lbl">Sources</span></div>
     <div class="feeds-scr" id="feedList"></div>
@@ -174,7 +175,7 @@
     <h3>Add Custom Feed</h3>
     <div class="fg"><label class="fl">Feed Name</label><input class="fi" id="fName" type="text" placeholder="e.g. One Useful Thing"></div>
     <div class="fg"><label class="fl">RSS / Atom URL</label><input class="fi" id="fUrl" type="url" placeholder="https://www.oneusefulthing.org/feed" onkeydown="if(event.key==='Enter')saveFeed()"><div class="fhint">Most blogs publish a feed at /feed, /rss, or /feed.xml</div></div>
-    <div class="fg"><label class="fl">Category</label><select class="fs" id="fCat"><option value="ai">🤖 AI & ML</option><option value="tech">💻 Tech</option><option value="finance">📈 Finance</option><option value="general">📚 General</option></select></div>
+    <div class="fg"><label class="fl">Category</label><select class="fs" id="fCat"><option value="ai">🤖 AI & ML</option><option value="tech">💻 Tech</option><option value="finance">📈 Finance</option><option value="general">📚 General</option><option value="homelab">🏠 Homelab</option></select></div>
     <div class="m-actions"><button class="btn btn-g" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveFeed()">Add Feed</button></div>
   </div>
 </div>
@@ -182,8 +183,8 @@
 'use strict';
 const REFRESH_HRS=[9,12,15,18,21];
 const ARCHIVE_DAYS=7;
-const CAT_COLORS={ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706'};
-const CAT_LABELS={all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',bookmarks:'Bookmarks'};
+const CAT_COLORS={ai:'#7c3aed',tech:'#0066ff',finance:'#00b37e',general:'#d97706',homelab:'#059669'};
+const CAT_LABELS={all:'All Sources',ai:'AI & ML',tech:'Tech',finance:'Finance',general:'General',homelab:'Homelab',bookmarks:'Bookmarks'};
 // Custom feeds are fetched server-side via our own Netlify function (/api/articles?url=...)
 const DEFAULT_FEEDS=[
   {id:'one-useful-thing',name:'One Useful Thing',url:'https://www.oneusefulthing.org/feed',cat:'ai'},
@@ -212,6 +213,16 @@ const DEFAULT_FEEDS=[
   {id:'mit-rev',name:'MIT Tech Review',url:'https://www.technologyreview.com/feed/',cat:'general'},
   {id:'nyt-tech',name:'NYT Technology',url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',cat:'general'},
   {id:'new-scientist',name:'New Scientist',url:'https://www.newscientist.com/feed/home/',cat:'general'},
+  {id:'virt-howto',name:'Virtualization Howto',url:'https://www.virtualizationhowto.com/feed/',cat:'homelab'},
+  {id:'wolfgang',name:"Wolfgang's Blog",url:'https://notthebe.ee/rss/',cat:'homelab'},
+  {id:'noted-lol',name:'Noted.lol',url:'https://noted.lol/rss/',cat:'homelab'},
+  {id:'techhut',name:'TechHut.tv',url:'https://techhut.tv/feed/',cat:'homelab'},
+  {id:'selfhostrealm',name:'SelfhostRealm',url:'https://selfhostrealm.com/feed/',cat:'homelab'},
+  {id:'selfhosted-libhunt',name:'Selfhosted Libhunt',url:'https://selfhosted.libhunt.com/feed',cat:'homelab'},
+  {id:'briancmoses',name:'BrianCMoses',url:'https://blog.briancmoses.com/feed/',cat:'homelab'},
+  {id:'zerotohomelab',name:'Zero to Homelab',url:'https://zerotohomelab.cloudboxhub.com/feed/',cat:'homelab'},
+  {id:'r-selfhosted',name:'r/selfhosted',url:'https://www.reddit.com/r/selfhosted/.rss',cat:'homelab'},
+  {id:'awesome-selfhosted',name:'Awesome Self-Hosted',url:'https://github.com/awesome-selfhosted/awesome-selfhosted/commits/master.atom',cat:'homelab'},
 ];
 let allArts=[],activeCat='all',searchQ='',loading=false,showArch=false;
 let statuses={},feeds=[];
@@ -296,7 +307,7 @@ function toggleBm(id,el,ev){ev.preventDefault();ev.stopPropagation();const art=a
 function setCat(cat){activeCat=cat;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));document.getElementById('tbTitle').textContent=CAT_LABELS[cat]||cat;renderFeedList();renderArticles();}
 function onSearch(v){searchQ=v.toLowerCase().trim();renderArticles();}
 function visible(){if(activeCat==='bookmarks'){let a=bmArts;if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ));return a}let a=allArts;if(activeCat!=='all')a=a.filter(x=>x.cat===activeCat);if(searchQ)a=a.filter(x=>x.title?.toLowerCase().includes(searchQ)||x.desc?.toLowerCase().includes(searchQ)||x.source?.toLowerCase().includes(searchQ));return a;}
-function updateCounts(){const c={all:0,ai:0,tech:0,finance:0,general:0};allArts.forEach(a=>{c.all++;if(c[a.cat]!==undefined)c[a.cat]++;});Object.entries(c).forEach(([k,v])=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=v;});const bel=document.getElementById('cnt-bm');if(bel)bel.textContent=bmSet.size;}
+function updateCounts(){const c={all:0,ai:0,tech:0,finance:0,general:0,homelab:0};allArts.forEach(a=>{c.all++;if(c[a.cat]!==undefined)c[a.cat]++;});Object.entries(c).forEach(([k,v])=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=v;});const bel=document.getElementById('cnt-bm');if(bel)bel.textContent=bmSet.size;}
 function toTS(d){if(!d)return 0;const ts=typeof d==='string'?new Date(d):d;return isNaN(ts)?0:ts.getTime();}
 function fmtDate(d){const ts=typeof d==='string'?new Date(d):d;if(!ts||isNaN(ts))return'';const diff=Date.now()-ts.getTime(),h=Math.floor(diff/3600000),dy=Math.floor(diff/86400000);if(h<1)return'Just now';if(h<24)return h+'h ago';if(dy<7)return dy+'d ago';return ts.toLocaleDateString('en-US',{month:'short',day:'numeric',year:ts.getFullYear()!==new Date().getFullYear()?'numeric':undefined});}
 function isNew(d){return toTS(d)>0&&Date.now()-toTS(d)<86400000;}
